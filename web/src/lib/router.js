@@ -12,7 +12,7 @@ export const SECTIONS = [
 /** Hash routes: #/cu/5536/forecast, #/cu/5536/report */
 function parse(hash) {
   const m = hash.match(/^#\/cu\/(\d+)(?:\/([a-z]+))?/)
-  if (!m) return { cu: null, section: 'overview' }
+  if (!m) return { cu: null, section: 'home' }
   const section = m[2] && (m[2] === 'report' || SECTIONS.some((s) => s.id === m[2])) ? m[2] : 'overview'
   return { cu: Number(m[1]), section }
 }

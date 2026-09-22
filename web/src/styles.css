@@ -307,6 +307,182 @@ p {
   text-underline-offset: 3px;
 }
 
+/* Hero search on the light ground */
+.search.hero {
+  width: 100%;
+  max-width: 680px;
+  margin-top: 26px;
+}
+
+.search.hero .search-field {
+  height: 54px;
+  padding: 0 16px;
+  gap: 12px;
+  background: var(--sheet);
+  border: 1.5px solid var(--ink);
+  box-shadow: 0 1px 2px rgba(14, 26, 43, 0.06), 0 10px 24px -14px rgba(14, 26, 43, 0.35);
+}
+
+.search.hero .search-field:focus-within {
+  border-color: var(--fan);
+  background: var(--sheet);
+  box-shadow: 0 0 0 3px var(--fan-wash), 0 10px 24px -14px rgba(14, 26, 43, 0.35);
+}
+
+.search.hero .search-field svg {
+  color: var(--ink-2);
+}
+
+.search.hero .search-field input {
+  color: var(--ink);
+  font-size: 16px;
+}
+
+.search.hero .search-field input::placeholder {
+  color: var(--ink-3);
+}
+
+.search.hero .search-field input::selection {
+  background: var(--fan);
+  color: #fff;
+}
+
+.search.hero .kbd {
+  color: var(--ink-3);
+  border-color: var(--rule);
+}
+
+.bar-spacer {
+  flex: 1;
+}
+
+/* ───────────── Home ───────────── */
+
+.home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 32px var(--gutter);
+  align-items: end;
+  padding: 64px 0 44px;
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.home-lead h1 {
+  font-size: clamp(30px, 4.2vw, 46px);
+  line-height: 1.06;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  max-width: 16ch;
+}
+
+.home-lead > p:first-of-type {
+  margin-top: 16px;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 60ch;
+}
+
+.home-try {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+.home-try b {
+  color: var(--ink-2);
+  font-weight: 650;
+}
+
+.home-facts {
+  margin: 0;
+  display: grid;
+  border-top: 1px solid var(--rule-strong);
+}
+
+.home-facts > div {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  font-size: 13px;
+}
+
+.home-facts dt {
+  font-weight: 650;
+  color: var(--ink-2);
+}
+
+.home-facts dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.home-table td.name a {
+  font-weight: 600;
+}
+
+table.data tr.featured td,
+table.data.pin-first tr.featured td:first-child {
+  background: var(--fan-wash);
+}
+
+.home-table th.loc,
+.home-table td.loc {
+  text-align: left;
+  padding-left: 24px;
+}
+
+.guide {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.guide li + li {
+  border-top: 1px solid var(--rule-soft);
+}
+
+.guide a {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) 14px;
+  gap: 14px;
+  align-items: baseline;
+  padding: 11px 0;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.guide a svg {
+  align-self: center;
+  color: var(--ink-3);
+  transition: transform 160ms var(--ease-out), color 160ms var(--ease-out);
+}
+
+.guide a:hover .guide-name,
+.guide a:hover svg {
+  color: var(--fan-ink);
+}
+
+.guide a:hover svg {
+  transform: translateX(3px);
+}
+
+.guide-name {
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.guide-text {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
 /* ───────────── Masthead ───────────── */
 
 .masthead {
@@ -1449,6 +1625,7 @@ input[type='range']::-moz-range-thumb {
   .vital:nth-child(n + 4) { border-top: 1px solid var(--rule); }
   .stress-grid { grid-template-columns: minmax(0, 1fr); row-gap: 28px; }
   .bar-meta .optional { display: none; }
+  .home-hero { grid-template-columns: minmax(0, 1fr); padding-top: 44px; }
 }
 
 @media (max-width: 720px) {
@@ -1467,6 +1644,11 @@ input[type='range']::-moz-range-thumb {
   .tabs a, .tabs a:first-child { padding: 9px 0 10px; }
   .tabs a[aria-current='page']::after, .tabs a:first-child[aria-current='page']::after { left: 0; right: 0; }
   .masthead { grid-template-columns: minmax(0, 1fr); padding-top: 20px; }
+  .home-hero { padding: 32px 0 28px; }
+  .home-facts > div { grid-template-columns: 1fr; gap: 2px; }
+  .guide a { grid-template-columns: minmax(0, 1fr) 14px; gap: 2px 12px; }
+  .guide-text { grid-column: 1; }
+  .guide a svg { grid-row: 1 / span 2; grid-column: 2; }
   .masthead h1 { font-size: 24px; }
   .vitals { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .vital { padding: 14px 12px; }

@@ -6,8 +6,9 @@ import Search from './components/Search.jsx'
 import Vitals from './components/Vitals.jsx'
 import { latest } from './lib/analysis.js'
 import { count, isNum, quarter, usd } from './lib/format.js'
-import { SECTIONS, go, href, useRoute } from './lib/router.js'
+import { SECTIONS, href, useRoute } from './lib/router.js'
 import Forecast from './views/Forecast.jsx'
+import Home from './views/Home.jsx'
 import Method from './views/Method.jsx'
 import Overview from './views/Overview.jsx'
 import Peers from './views/Peers.jsx'
@@ -111,18 +112,14 @@ function Loading() {
 export default function App() {
   const route = useRoute()
   const meta = useResource('meta', (s) => api.meta(s))
-  const cu = route.cu ?? meta.data?.default_cu ?? null
+  const cu = route.cu
   const inst = useResource(cu && `inst:${cu}`, (s) => api.institution(cu, s))
   const peers = useResource(cu && `peers:${cu}`, (s) => api.peers(cu, s))
   const fc = useResource(cu && `fc:${cu}`, (s) => api.forecast(cu, s))
 
   useEffect(() => {
-    if (!route.cu && meta.data) go(meta.data.default_cu)
-  }, [route.cu, meta.data])
-
-  useEffect(() => {
-    if (inst.data) document.title = `${inst.data.name} · CU Pulse`
-  }, [inst.data])
+    document.title = cu && inst.data ? `${inst.data.name} · CU Pulse` : 'CU Pulse · Credit union financial health'
+  }, [cu, inst.data])
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
@@ -142,6 +139,8 @@ export default function App() {
   let body
   if (meta.error) {
     body = <ErrorNotice title="CU Pulse could not reach its data" error={meta.error} onRetry={reload(['meta'])} />
+  } else if (!cu) {
+    body = meta.data ? <Home meta={meta.data} /> : <Loading />
   } else if (inst.error) {
     body = <ErrorNotice title={inst.error.status === 404 ? 'Credit union not found' : 'This credit union could not load'} error={inst.error} onRetry={inst.error.status === 404 ? undefined : reload([`inst:${cu}`])} />
   } else if (!meta.data || !inst.data) {
@@ -174,7 +173,7 @@ export default function App() {
       <header className="bar">
         <div className="bar-inner">
           <Wordmark />
-          <Search section={section} />
+          {cu ? <Search section={section} /> : <span className="bar-spacer" />}
           {meta.data && (
             <div className="bar-meta">
               <span title={updates?.enabled ? `CU Pulse checks ncua.gov every ${updates.interval_hours} h for new and amended quarters.${updates.error ? ` Last check failed: ${updates.error}` : ''}` : 'Automatic NCUA checks are off.'}>

@@ -17,7 +17,7 @@ function Highlight({ text, needle }) {
 }
 
 /** Institution combobox. ⌘K or / focuses it from anywhere. */
-export default function Search({ section }) {
+export default function Search({ section, variant }) {
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const [results, setResults] = useState([])
@@ -89,9 +89,9 @@ export default function Search({ section }) {
   const expanded = open && (results.length > 0 || error || q.trim())
 
   return (
-    <div className="search">
+    <div className={`search ${variant ?? ''}`}>
       <label className="search-field">
-        <SearchIcon size={15} strokeWidth={2} aria-hidden="true" />
+        <SearchIcon size={variant === 'hero' ? 19 : 15} strokeWidth={2} aria-hidden="true" />
         <span className="visually-hidden">Find a credit union</span>
         <input
           ref={input}
@@ -100,7 +100,7 @@ export default function Search({ section }) {
           aria-controls={listId}
           aria-activedescendant={expanded && results[active] ? `${listId}-${active}` : undefined}
           aria-autocomplete="list"
-          placeholder="Credit union, city, state or charter"
+          placeholder={variant === 'hero' ? 'Search by credit union name, city, state or charter number' : 'Credit union, city, state or charter'}
           value={q}
           onChange={(e) => {
             setQ(e.target.value)

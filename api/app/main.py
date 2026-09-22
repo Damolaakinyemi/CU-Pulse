@@ -142,7 +142,9 @@ def search(q: Optional[str] = Query(None, description="Name, city, charter numbe
         "total": int(len(latest)),
         "results": [
             {"cu_number": int(r.cu_number), "name": r.display_name, "city": r.city, "state": r.state,
-             "total_assets": float(r.total_assets)}
+             "total_assets": float(r.total_assets), "members": num(r.members),
+             "net_worth_ratio": num(r.net_worth_ratio),
+             "pca_tier": pca_tier(r.net_worth_ratio) if pd.notna(r.net_worth_ratio) else None}
             for r in latest.head(max(1, min(limit, 50))).itertuples()
         ],
     }

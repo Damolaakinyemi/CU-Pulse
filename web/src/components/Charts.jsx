@@ -11,26 +11,13 @@ import {
   YAxis,
 } from 'recharts'
 import { isNum, pct, quarterTick, usd } from '../lib/format.js'
-import { extent, zonesInView } from '../lib/chartmath.js'
+import { extent, niceStep, niceTicks, zonesInView } from '../lib/chartmath.js'
 import { AXIS, C, GRID } from '../lib/theme.js'
 import { Readout } from './Chrome.jsx'
 
 const SYNC = 'cu-quarter'
 
 /** Round tick positions (1, 2, 2.5, 5 × 10ⁿ steps) covering the domain. */
-function niceStep([lo, hi], target) {
-  const raw = (hi - lo) / Math.max(target - 1, 1)
-  const mag = 10 ** Math.floor(Math.log10(raw))
-  return [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw) ?? 10 * mag
-}
-
-function niceTicks(domain, target = 5) {
-  const step = niceStep(domain, target)
-  const ticks = []
-  for (let t = Math.ceil(domain[0] / step) * step; t <= domain[1] + step * 1e-9; t += step) ticks.push(Number(t.toPrecision(12)))
-  return ticks
-}
-
 /** Percent axis labels carry only the decimals the tick step needs. */
 function pctAxis(domain, target) {
   const step = niceStep(domain, target) * 100
