@@ -27,7 +27,7 @@ export function usd(v, digits) {
   const a = Math.abs(v)
   const sign = v < 0 ? '−' : ''
   const [div, unit] = a >= 1e12 ? [1e12, 'T'] : a >= 1e9 ? [1e9, 'B'] : a >= 1e6 ? [1e6, 'M'] : a >= 1e3 ? [1e3, 'K'] : [1, '']
-  const d = digits ?? (a / div >= 100 ? 1 : a / div >= 10 ? 1 : 2)
+  const d = digits ?? (div === 1 ? 0 : a / div >= 10 ? 1 : 2)
   return `${sign}$${nf(d).format(a / div)}${unit}`
 }
 

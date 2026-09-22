@@ -7,6 +7,8 @@ import Vitals from './components/Vitals.jsx'
 import { latest } from './lib/analysis.js'
 import { count, isNum, quarter, usd } from './lib/format.js'
 import { SECTIONS, href, useRoute } from './lib/router.js'
+import Accuracy from './views/Accuracy.jsx'
+import CaseStudy from './views/CaseStudy.jsx'
 import Forecast from './views/Forecast.jsx'
 import Home from './views/Home.jsx'
 import Method from './views/Method.jsx'
@@ -118,8 +120,9 @@ export default function App() {
   const fc = useResource(cu && `fc:${cu}`, (s) => api.forecast(cu, s))
 
   useEffect(() => {
-    document.title = cu && inst.data ? `${inst.data.name} · CU Pulse` : 'CU Pulse · Credit union financial health'
-  }, [cu, inst.data])
+    const titles = { 'case-study': 'Case study: Navy Federal', accuracy: 'Forecast accuracy' }
+    document.title = cu && inst.data ? `${inst.data.name} · CU Pulse` : titles[route.section] ? `${titles[route.section]} · CU Pulse` : 'CU Pulse · Credit union financial health'
+  }, [cu, inst.data, route.section])
 
   useEffect(() => {
     window.scrollTo({ top: 0 })
@@ -140,7 +143,8 @@ export default function App() {
   if (meta.error) {
     body = <ErrorNotice title="CU Pulse could not reach its data" error={meta.error} onRetry={reload(['meta'])} />
   } else if (!cu) {
-    body = meta.data ? <Home meta={meta.data} /> : <Loading />
+    const Page = section === 'case-study' ? CaseStudy : section === 'accuracy' ? Accuracy : Home
+    body = meta.data ? <Page meta={meta.data} /> : <Loading />
   } else if (inst.error) {
     body = <ErrorNotice title={inst.error.status === 404 ? 'Credit union not found' : 'This credit union could not load'} error={inst.error} onRetry={inst.error.status === 404 ? undefined : reload([`inst:${cu}`])} />
   } else if (!meta.data || !inst.data) {
@@ -173,7 +177,11 @@ export default function App() {
       <header className="bar">
         <div className="bar-inner">
           <Wordmark />
-          {cu ? <Search section={section} /> : <span className="bar-spacer" />}
+          {cu || section !== 'home' ? <Search section={cu ? section : 'overview'} /> : <span className="bar-spacer" />}
+          <nav className="bar-nav" aria-label="Pages">
+            <a href="#/case-study" aria-current={section === 'case-study' ? 'page' : undefined}>Case study</a>
+            <a href="#/accuracy" aria-current={section === 'accuracy' ? 'page' : undefined}>Forecast accuracy</a>
+          </nav>
           {meta.data && (
             <div className="bar-meta">
               <span title={updates?.enabled ? `CU Pulse checks ncua.gov every ${updates.interval_hours} h for new and amended quarters.${updates.error ? ` Last check failed: ${updates.error}` : ''}` : 'Automatic NCUA checks are off.'}>

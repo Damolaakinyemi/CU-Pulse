@@ -1,0 +1,10 @@
+# Render Blueprint: New → Blueprint → pick this repo. One free web service.
+services:
+  - type: web
+    name: cu-pulse
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: CUPULSE_UPDATE_HOURS
+        value: "24"

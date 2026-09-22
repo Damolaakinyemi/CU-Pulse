@@ -15,14 +15,19 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Optional
 
+import json
+
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.staticfiles import StaticFiles
 
 from pipeline import ncua
 from pipeline.forecast import MODELS, SERIES, forecast_cu
 from pipeline.metrics import DEFINITIONS, HEADLINE, METRICS, PCA_TIERS, derive, pca_tier, peer_stats
 
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "processed" / "call_reports.csv.gz"
+BACKTEST_FILE = DATA_FILE.with_name("backtest_summary.json")
+WEB_DIST = Path(os.environ.get("CUPULSE_WEB_DIST", Path(__file__).resolve().parents[2] / "web" / "dist"))
 DEFAULT_CU = 5536  # Navy Federal Credit Union
 
 app = FastAPI(title="CU Pulse API", version="1.0.0")
@@ -97,6 +102,18 @@ def warm() -> None:
     threading.Thread(target=lambda: cached_forecast(DEFAULT_CU), daemon=True).start()
     if UPDATES["enabled"]:
         threading.Thread(target=update_loop, daemon=True).start()
+
+
+@app.get("/api/health")
+def health():
+    return {"ok": True, "loaded_at": UPDATES["loaded_at"]}
+
+
+@app.get("/api/backtest")
+def backtest():
+    if not BACKTEST_FILE.exists():
+        raise HTTPException(status_code=404, detail="The industry backtest has not been run. Run: python -m pipeline.backtest_all")
+    return json.loads(BACKTEST_FILE.read_text())
 
 
 @app.get("/api/meta")
@@ -187,3 +204,8 @@ def peers(cu_number: int):
 def forecast(cu_number: int):
     require_cu(cu_number)
     return cached_forecast(cu_number)
+
+
+# In production the API also serves the built frontend, so the app is one service.
+if (WEB_DIST / "index.html").exists():
+    app.mount("/", StaticFiles(directory=WEB_DIST, html=True), name="web")

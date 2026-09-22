@@ -2,7 +2,15 @@
 
 Financial health, four-quarter forecasts, and size-matched peer benchmarks for every U.S. federally insured credit union, built on NCUA's public 5300 Call Report data. Opens on Navy Federal Credit Union (charter 5536).
 
-Product context lives in [PRODUCT.md](PRODUCT.md).
+Product context lives in [PRODUCT.md](PRODUCT.md); the Navy Federal write-up is in [CASE_STUDY.md](CASE_STUDY.md).
+
+![CU Pulse home: search, a live Navy Federal read-out, and the largest credit unions](docs/screenshots/home.png)
+
+| Dashboard | Forecast and backtest |
+|---|---|
+| ![Navy Federal dashboard](docs/screenshots/dashboard.png) | ![Forecast fans and backtest](docs/screenshots/forecast.png) |
+| **Stress test** | **Case study** |
+| ![Stress test against the 7% line](docs/screenshots/stress.png) | ![Navy Federal case study](docs/screenshots/case-study.png) |
 
 ## What it does
 
@@ -13,6 +21,8 @@ Product context lives in [PRODUCT.md](PRODUCT.md).
 - **Stress test:** one severity control moves charge-offs, pre-loss ROA and asset growth together; each lever can also be set by hand. Shows the four-quarter capital path against the 7% well-capitalized line and the extra charge-off rate the institution could absorb before crossing it.
 - **Method:** data lineage, formulas and account codes, peer and forecast methodology, limitations.
 - **One-page report:** a printable read-out of any institution (Print or save as PDF).
+- **Case study:** Navy Federal's elevated charge-offs against its earnings and capital, built entirely from live figures.
+- **Forecast accuracy:** the forecast re-run for every active credit union and scored on quarters the model choice never saw.
 
 ## Run
 
@@ -31,6 +41,31 @@ cd ../web
 npm install
 npm run dev
 ```
+
+## Tests
+
+```bash
+cd api && .venv/bin/pip install -r requirements-dev.txt && .venv/bin/python -m pytest -q tests
+cd web && npm test
+```
+
+The Python suite covers the ratio definitions on hand-built filings, Navy Federal's 2026Q2 figures against its filing, reported versus computed net worth ratio, peer selection, forecasting on series with known answers (drift recovery, interval nesting, coverage on a true random walk), zip parsing, the update logic (new and amended quarters, no network), and the API contract. The frontend suite covers the stress-test arithmetic (the breakeven solves to exactly 7%), fan construction, the generated reading, formatters and axis ticks. GitHub Actions runs both on every push (`.github/workflows/ci.yml`).
+
+## Industry backtest
+
+```bash
+cd api && .venv/bin/python -m pipeline.backtest_all   # about 20 minutes on 8 cores
+```
+
+For every active credit union, the model is chosen on the earliest four of eight rolling origins and scored on the last four, so the reported accuracy is not flattered by the selection. Output: `api/data/processed/backtest_summary.json`, shown on the Forecast accuracy page.
+
+## Deploy
+
+The API also serves the built frontend, so the app is a single service (`Dockerfile`).
+
+**Render (free):** push the repo to GitHub, then in Render choose New → Blueprint and pick the repo. `render.yaml` sets up one Docker web service with a health check. The committed data panel ships in the image; the daily NCUA check appends new quarters as they are published (free instances sleep when idle and check again on wake).
+
+Any Docker host works the same way: `docker build -t cu-pulse . && docker run -p 8000:8000 cu-pulse`.
 
 ## Staying current with NCUA
 
@@ -52,7 +87,10 @@ The Method page's Data notes cover names, extreme values and mergers.
 
 - `api/pipeline/ncua.py`: downloads and parses the Call Report zips (`FOICU`, `FS220`, `FS220A`) into `data/processed/call_reports.csv.gz`
 - `api/pipeline/metrics.py`: ratio definitions (FPR conventions), capital (PCA) tiers, peer selection and statistics
-- `api/pipeline/forecast.py`: candidate models, rolling-origin backtest, interval coverage
+- `api/pipeline/forecast.py`: candidate models, rolling-origin backtest, interval coverage, honest out-of-sample evaluation
+- `api/pipeline/backtest_all.py`: the industry-wide backtest
+- `api/pipeline/case_study.py`: regenerates CASE_STUDY.md from the data
+- `api/tests/`, `web/src/lib/__tests__/`: test suites
 - `api/app/main.py`: FastAPI routes `/api/meta`, `/api/credit-unions?q=`, `/api/credit-unions/{charter}`, `/peers`, `/forecast`
 - `web/src/`: React app (Vite, Recharts, Public Sans). `views/` has one file per section; `lib/analysis.js` holds the generated reading and the stress-test math.
 

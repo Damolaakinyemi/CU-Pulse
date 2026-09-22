@@ -26,6 +26,7 @@ export const api = {
   institution: (n, signal) => get(`/credit-unions/${n}`, undefined, signal),
   peers: (n, signal) => get(`/credit-unions/${n}/peers`, undefined, signal),
   forecast: (n, signal) => get(`/credit-unions/${n}/forecast`, undefined, signal),
+  backtest: (signal) => get('/backtest', undefined, signal),
 }
 
 const cache = new Map()

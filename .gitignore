@@ -6,3 +6,4 @@ api/data/raw/
 web/dist/
 .impeccable/review/
 .impeccable/*.local.json
+api/.pytest_cache/

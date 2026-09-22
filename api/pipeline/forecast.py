@@ -130,13 +130,53 @@ def forecast_series(history: pd.Series, log: bool) -> dict:
     }
 
 
-def forecast_cu(rows: pd.DataFrame) -> dict:
+def _unbroken(rows: pd.DataFrame) -> pd.DataFrame:
+    """The longest run of consecutive quarters ending at the latest filing."""
     rows = rows.sort_values("quarter").set_index("quarter")
-    # Use the longest run of consecutive quarters ending at the latest filing.
     periods = pd.PeriodIndex(rows.index, freq="Q")
     breaks = np.where(np.diff(periods.asi8) != 1)[0]
-    if len(breaks):
-        rows = rows.iloc[breaks[-1] + 1:]
+    return rows.iloc[breaks[-1] + 1:] if len(breaks) else rows
+
+
+def honest_eval(history: pd.Series, log: bool, select_on: int = 4) -> dict:
+    """Out-of-sample check that does not grade the model on the data used to pick it.
+
+    Every candidate is backtested from the usual eight origins. The model is
+    chosen on the earliest `select_on` origins only, then it and the drift
+    benchmark are scored on the later origins, which played no part in the choice.
+    """
+    y = np.log(history.values) if log else history.values.astype(float)
+    quarters = list(history.index)
+    candidates = ["drift", "ets", "arima"] if len(y) >= MIN_HISTORY + HORIZON else ["drift"]
+    trails = {}
+    for model in candidates:
+        try:
+            trails[model] = _backtest(model, y, log, quarters)["trail"]
+        except Exception:
+            continue
+    origins = sorted({t["origin"] for t in trails["drift"]})
+    early, late = set(origins[:select_on]), set(origins[select_on:])
+
+    def err(trail, keep):
+        e = [abs(t["predicted"] - t["actual"]) / abs(t["actual"]) if log else abs(t["predicted"] - t["actual"])
+             for t in trail if t["origin"] in keep]
+        return float(np.mean(e)) if e else None
+
+    def cover(trail, keep):
+        hits = [t["lo80"] <= t["actual"] <= t["hi80"] for t in trail if t["origin"] in keep]
+        return float(np.mean(hits)) if hits else None
+
+    chosen = min(trails, key=lambda m: err(trails[m], early))
+    return {
+        "chosen": chosen,
+        "error": err(trails[chosen], late),
+        "drift_error": err(trails["drift"], late),
+        "coverage80": cover(trails[chosen], late),
+    }
+
+
+def forecast_cu(rows: pd.DataFrame) -> dict:
+    rows = _unbroken(rows)
     out = {}
     for key, spec in SERIES.items():
         history = rows[key].dropna()

@@ -112,18 +112,41 @@ def _next_cycle(cycle: str) -> str:
     return f"{p.year}-{p.quarter * 3:02d}"
 
 
+def _cycle_of(quarter: str) -> str:
+    return f"{quarter[:4]}-{int(quarter[-1]) * 3:02d}"
+
+
+def merge(cycles_changed: list) -> pd.DataFrame:
+    """Replace or append just the changed quarters in the processed panel.
+
+    A deployed server carries only the processed panel, not every raw zip, so a
+    full rebuild is not always possible; merging keeps every other quarter as is.
+    """
+    panel = pd.read_csv(OUT)
+    fresh = pd.concat([read_cycle(RAW / f"{c}.zip") for c in cycles_changed], ignore_index=True)
+    fresh = fresh.dropna(subset=["total_assets"])
+    fresh = fresh[fresh["total_assets"] > 0]
+    panel = pd.concat([panel[~panel["quarter"].isin(fresh["quarter"].unique())], fresh], ignore_index=True)
+    panel.sort_values(["cu_number", "quarter"]).to_csv(OUT, index=False, compression="gzip")
+    return panel
+
+
 def update() -> dict:
-    """Pull any newly published or amended quarters from ncua.gov; rebuild the panel if anything changed."""
+    """Pull any newly published or amended quarters from ncua.gov; merge them into the panel."""
+    RAW.mkdir(parents=True, exist_ok=True)
     manifest = _manifest()
     local = sorted(z.stem for z in RAW.glob("*.zip"))
     if not local:
-        raise SystemExit(f"no Call Report zips in {RAW}; run with --download first")
+        if not OUT.exists():
+            raise RuntimeError(f"no Call Report data; run: python -m pipeline.ncua --download")
+        quarters = sorted(pd.read_csv(OUT, usecols=["quarter"])["quarter"].unique())
+        local = [_cycle_of(q) for q in quarters[-2:]]  # judge freshness from the panel itself
     changed = []
     # Amendments: NCUA re-posts recent quarters when credit unions refile.
     for cycle in local[-2:]:
         remote = _remote_modified(cycle)
         if remote and remote != "unknown" and remote != manifest.get(cycle):
-            if cycle in manifest:
+            if cycle in manifest and (RAW / f"{cycle}.zip").exists():
                 _fetch(cycle, remote, manifest)
                 changed.append(f"{cycle} (amended)")
             else:
@@ -136,7 +159,7 @@ def update() -> dict:
         cycle = _next_cycle(cycle)
     MANIFEST.write_text(json.dumps(manifest, indent=1, sort_keys=True))
     if changed:
-        build()
+        merge([c.split(" ")[0] for c in changed])
     return {
         "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "changed": changed,

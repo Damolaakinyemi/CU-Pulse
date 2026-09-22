@@ -1,9 +1,12 @@
 import { ArrowRight } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { api, useResource } from '../api.js'
-import { Exhibit, Readout, Skeleton, Stamp } from '../components/Chrome.jsx'
+import { Exhibit, PercentileRule, Readout, Skeleton, Stamp } from '../components/Chrome.jsx'
+import { FanChart, FanLegend } from '../components/Charts.jsx'
 import Search from '../components/Search.jsx'
-import { compactCount, count, pct, quarter, quarterTick, usd } from '../lib/format.js'
+import { fanSeries, latest, latestPeer } from '../lib/analysis.js'
+import { SummaryTable } from './Accuracy.jsx'
+import { compactCount, count, fmt, pct, quarter, quarterTick, usd } from '../lib/format.js'
 import { SECTIONS, href } from '../lib/router.js'
 import { niceTicks } from '../lib/chartmath.js'
 import { AXIS, C, GRID } from '../lib/theme.js'
@@ -53,8 +56,50 @@ function IndustryChart({ rows, dataKey, format, label }) {
   )
 }
 
+/** A live, working slice of one credit union's dashboard: what the app does, shown rather than described. */
+function Specimen({ cu, meta }) {
+  const inst = useResource(`inst:${cu}`, (s) => api.institution(cu, s))
+  const peers = useResource(`peers:${cu}`, (s) => api.peers(cu, s))
+  const fc = useResource(`fc:${cu}`, (s) => api.forecast(cu, s))
+  if (inst.error) return null
+  if (!inst.data || !peers.data || !fc.data) return <Skeleton height={420} />
+  const i = inst.data
+  const now = latest(i)
+  const rows = fanSeries(i, fc.data.series.net_worth_ratio, 'net_worth_ratio', '2023Q1')
+  const figures = [
+    ['net_worth_ratio', 'Net worth ratio'],
+    ['net_charge_off_rate', 'Net charge-offs'],
+    ['roa', 'Return on assets'],
+  ]
+  return (
+    <a className="specimen" href={href(cu)} aria-label={`Open the ${i.name} dashboard`}>
+      <div className="specimen-head">
+        <span className="specimen-name">{i.name}</span>
+        <span className="specimen-meta">{usd(now.total_assets)} · {quarter(i.latest_quarter)}</span>
+      </div>
+      <div className="specimen-figs">
+        {figures.map(([k, label]) => (
+          <div key={k}>
+            <span className="k">{label}</span>
+            <span className="v">{pct(now[k])}</span>
+            <PercentileRule value={now[k]} peer={latestPeer(peers.data, k)} better={meta.definitions[k]?.better} />
+          </div>
+        ))}
+      </div>
+      <div className="specimen-chart">
+        <FanChart rows={rows} format={fmt.pct} zones compact height={170} label="Net worth ratio" />
+        <FanLegend zones rows={rows} />
+      </div>
+      <span className="specimen-cta">
+        Open the full read-out <ArrowRight size={14} strokeWidth={2} aria-hidden="true" />
+      </span>
+    </a>
+  )
+}
+
 export default function Home({ meta }) {
   const top = useResource('home:top', (s) => api.search('', s))
+  const bt = useResource('backtest', (s) => api.backtest(s))
   const featured = meta.default_cu
   const industry = meta.industry
   const first = industry[0]
@@ -85,35 +130,37 @@ export default function Home({ meta }) {
           </p>
         </div>
 
-        <dl className="home-facts" aria-label="Data status">
-          <div>
-            <dt>Latest filing</dt>
-            <dd>
-              {quarter(meta.latest_quarter)} <Stamp kind="reported">As filed</Stamp>
-            </dd>
-          </div>
-          <div>
-            <dt>Coverage</dt>
-            <dd>{quarter(meta.first_quarter)} – {quarter(meta.latest_quarter)}</dd>
-          </div>
-          <div>
-            <dt>NCUA last checked</dt>
-            <dd>{u?.enabled ? checkedText(u.checked_at) : 'Automatic checks off'}</dd>
-          </div>
-          {u?.enabled && awaiting && (
-            <div>
-              <dt>Next quarter</dt>
-              <dd>{quarter(awaiting)}, usually about two months after quarter end</dd>
-            </div>
-          )}
-          <div>
-            <dt>Source</dt>
-            <dd>
-              <a href={meta.source_url} target="_blank" rel="noreferrer">NCUA 5300 Call Report</a>
-            </dd>
-          </div>
-        </dl>
+        <Specimen cu={featured} meta={meta} />
       </section>
+
+        <dl className="home-status" aria-label="Data status">
+        <div>
+          <dt>Latest filing</dt>
+          <dd>
+            {quarter(meta.latest_quarter)} <Stamp kind="reported">As filed</Stamp>
+          </dd>
+        </div>
+        <div>
+          <dt>Coverage</dt>
+          <dd>{quarter(meta.first_quarter)} – {quarter(meta.latest_quarter)}</dd>
+        </div>
+        <div>
+          <dt>NCUA last checked</dt>
+          <dd>{u?.enabled ? checkedText(u.checked_at) : 'Automatic checks off'}</dd>
+        </div>
+        {u?.enabled && awaiting && (
+          <div>
+            <dt>Next quarter</dt>
+            <dd>{quarter(awaiting)}, usually about two months after quarter end</dd>
+          </div>
+        )}
+        <div>
+          <dt>Source</dt>
+          <dd>
+            <a href={meta.source_url} target="_blank" rel="noreferrer">NCUA 5300 Call Report</a>
+          </dd>
+        </div>
+      </dl>
 
       <div className="grid">
         <Exhibit
@@ -163,6 +210,28 @@ export default function Home({ meta }) {
             <Skeleton height={380} />
           )}
         </Exhibit>
+
+        <Exhibit
+          className="span-7"
+          id="home-accuracy"
+          title="How accurate are the forecasts?"
+          sub="every credit union, scored out of sample"
+          tools={<a href="#/accuracy">Full results</a>}
+          source={bt.data ? bt.data.method : 'Each forecast re-run from earlier quarters and checked against what was later reported.'}
+        >
+          {bt.data ? <SummaryTable data={bt.data} compact /> : bt.error ? <p className="inline-note">The industry backtest has not been run on this server yet.</p> : <Skeleton height={180} />}
+        </Exhibit>
+
+        <section className="span-5 teaser" aria-labelledby="home-case">
+          <h2 id="home-case">Case study: Navy Federal</h2>
+          <p>
+            The largest credit union’s losses run well above its peers’. Does that threaten its capital? A read-out built
+            entirely from its filings, with a stress test and the forecast’s own track record.
+          </p>
+          <a className="button primary" href="#/case-study">
+            Read the case study <ArrowRight size={14} strokeWidth={2} />
+          </a>
+        </section>
 
         <Exhibit
           className="span-7"
