@@ -1,0 +1,315 @@
+{
+ "as_of": "2026Q2",
+ "credit_unions": 4299,
+ "method": "Model chosen on the earliest 4 of 8 rolling origins; scored on the last 4 (16 forecasts per series per credit union, 1\u20134 quarters ahead) against a random walk with drift.",
+ "error_metric": {
+  "total_assets": "MAPE",
+  "total_loans": "MAPE",
+  "total_shares_deposits": "MAPE",
+  "net_worth_ratio": "MAE, ratio points"
+ },
+ "labels": {
+  "total_assets": "Total assets",
+  "total_loans": "Total loans and leases",
+  "total_shares_deposits": "Total shares and deposits",
+  "net_worth_ratio": "Net worth ratio"
+ },
+ "models": {
+  "drift": "Random walk with drift",
+  "ets": "Exponential smoothing (damped trend, quarterly seasonal)",
+  "arima": "ARIMA(1,1,0) with drift"
+ },
+ "overall": {
+  "total_assets": {
+   "n": 4244,
+   "median_error": 0.02856949077230106,
+   "median_drift_error": 0.030870659126696114,
+   "skill_vs_drift": 0.0745422488373455,
+   "beats_drift_share": 0.4050424128180961,
+   "ties_drift_share": 0.36050895381715364,
+   "coverage80_mean": 0.768113807728558,
+   "chosen_share": {
+    "drift": 0.36050895381715364,
+    "ets": 0.3296418473138549,
+    "arima": 0.30984919886899154
+   }
+  },
+  "total_loans": {
+   "n": 4240,
+   "median_error": 0.04089147463701162,
+   "median_drift_error": 0.051680640998496105,
+   "skill_vs_drift": 0.20876610957279818,
+   "beats_drift_share": 0.5733490566037736,
+   "ties_drift_share": 0.19693396226415094,
+   "coverage80_mean": 0.7232458726415094,
+   "chosen_share": {
+    "drift": 0.19693396226415094,
+    "ets": 0.4528301886792453,
+    "arima": 0.35023584905660377
+   }
+  },
+  "total_shares_deposits": {
+   "n": 4242,
+   "median_error": 0.0314802160529965,
+   "median_drift_error": 0.033893856154374145,
+   "skill_vs_drift": 0.07121172906335571,
+   "beats_drift_share": 0.39745403111739747,
+   "ties_drift_share": 0.35902876001885903,
+   "coverage80_mean": 0.7689916313059877,
+   "chosen_share": {
+    "drift": 0.35902876001885903,
+    "ets": 0.32390381895332393,
+    "arima": 0.31706742102781704
+   }
+  },
+  "net_worth_ratio": {
+   "n": 4244,
+   "median_error": 0.0041464935737597595,
+   "median_drift_error": 0.004351137343749999,
+   "skill_vs_drift": 0.047032247852205944,
+   "beats_drift_share": 0.3621583411875589,
+   "ties_drift_share": 0.37441093308199813,
+   "coverage80_mean": 0.7396176955702167,
+   "chosen_share": {
+    "drift": 0.37441093308199813,
+    "ets": 0.30560791705937795,
+    "arima": 0.3199811498586239
+   }
+  }
+ },
+ "by_band": {
+  "Under $50M": {
+   "total_assets": {
+    "n": 1892,
+    "median_error": 0.033113611775839644,
+    "median_drift_error": 0.035719219761393875,
+    "skill_vs_drift": 0.07294694573285254,
+    "beats_drift_share": 0.41226215644820297,
+    "ties_drift_share": 0.35412262156448204,
+    "coverage80_mean": 0.7665829809725159,
+    "chosen_share": {
+     "drift": 0.35412262156448204,
+     "ets": 0.313953488372093,
+     "arima": 0.33192389006342493
+    }
+   },
+   "total_loans": {
+    "n": 1888,
+    "median_error": 0.05706185426715847,
+    "median_drift_error": 0.07358517998387636,
+    "skill_vs_drift": 0.22454692263222564,
+    "beats_drift_share": 0.5741525423728814,
+    "ties_drift_share": 0.2208686440677966,
+    "coverage80_mean": 0.7080905720338984,
+    "chosen_share": {
+     "drift": 0.2208686440677966,
+     "ets": 0.4014830508474576,
+     "arima": 0.3776483050847458
+    }
+   },
+   "total_shares_deposits": {
+    "n": 1890,
+    "median_error": 0.038400033973649494,
+    "median_drift_error": 0.0410125304515502,
+    "skill_vs_drift": 0.06369995825999941,
+    "beats_drift_share": 0.38994708994708993,
+    "ties_drift_share": 0.37037037037037035,
+    "coverage80_mean": 0.7618386243386244,
+    "chosen_share": {
+     "drift": 0.37037037037037035,
+     "ets": 0.3058201058201058,
+     "arima": 0.3238095238095238
+    }
+   },
+   "net_worth_ratio": {
+    "n": 1892,
+    "median_error": 0.005844549635416669,
+    "median_drift_error": 0.006026234843749995,
+    "skill_vs_drift": 0.030149042153867933,
+    "beats_drift_share": 0.3488372093023256,
+    "ties_drift_share": 0.3657505285412262,
+    "coverage80_mean": 0.7195428118393234,
+    "chosen_share": {
+     "drift": 0.3657505285412262,
+     "ets": 0.3049682875264271,
+     "arima": 0.32928118393234673
+    }
+   }
+  },
+  "$50M\u2013$500M": {
+   "total_assets": {
+    "n": 1614,
+    "median_error": 0.025072440870964233,
+    "median_drift_error": 0.02790514813494651,
+    "skill_vs_drift": 0.10151199521620846,
+    "beats_drift_share": 0.4281288723667906,
+    "ties_drift_share": 0.3513011152416357,
+    "coverage80_mean": 0.7748218711276332,
+    "chosen_share": {
+     "drift": 0.3513011152416357,
+     "ets": 0.3190830235439901,
+     "arima": 0.32961586121437425
+    }
+   },
+   "total_loans": {
+    "n": 1614,
+    "median_error": 0.03385718634591296,
+    "median_drift_error": 0.04283142815370347,
+    "skill_vs_drift": 0.20952469237275573,
+    "beats_drift_share": 0.5774473358116481,
+    "ties_drift_share": 0.18773234200743494,
+    "coverage80_mean": 0.7227772614622057,
+    "chosen_share": {
+     "drift": 0.18773234200743494,
+     "ets": 0.47335811648079307,
+     "arima": 0.338909541511772
+    }
+   },
+   "total_shares_deposits": {
+    "n": 1614,
+    "median_error": 0.027230622010724376,
+    "median_drift_error": 0.030065015855015823,
+    "skill_vs_drift": 0.09427548144194897,
+    "beats_drift_share": 0.41263940520446096,
+    "ties_drift_share": 0.34572490706319703,
+    "coverage80_mean": 0.7846576827757125,
+    "chosen_share": {
+     "drift": 0.34572490706319703,
+     "ets": 0.3252788104089219,
+     "arima": 0.32899628252788105
+    }
+   },
+   "net_worth_ratio": {
+    "n": 1614,
+    "median_error": 0.003409595505580562,
+    "median_drift_error": 0.0035874871875000033,
+    "skill_vs_drift": 0.049586708640876886,
+    "beats_drift_share": 0.3667905824039653,
+    "ties_drift_share": 0.3828996282527881,
+    "coverage80_mean": 0.7478314745972738,
+    "chosen_share": {
+     "drift": 0.3828996282527881,
+     "ets": 0.30111524163568776,
+     "arima": 0.3159851301115242
+    }
+   }
+  },
+  "$500M\u2013$10B": {
+   "total_assets": {
+    "n": 713,
+    "median_error": 0.02546118993526637,
+    "median_drift_error": 0.026458701947454276,
+    "skill_vs_drift": 0.03770071616396442,
+    "beats_drift_share": 0.3394109396914446,
+    "ties_drift_share": 0.394109396914446,
+    "coverage80_mean": 0.7580645161290323,
+    "chosen_share": {
+     "drift": 0.394109396914446,
+     "ets": 0.3899018232819074,
+     "arima": 0.21598877980364656
+    }
+   },
+   "total_loans": {
+    "n": 713,
+    "median_error": 0.027708584923282098,
+    "median_drift_error": 0.03454002281401816,
+    "skill_vs_drift": 0.19778324778533463,
+    "beats_drift_share": 0.5582047685834503,
+    "ties_drift_share": 0.1584852734922861,
+    "coverage80_mean": 0.7634116409537167,
+    "chosen_share": {
+     "drift": 0.1584852734922861,
+     "ets": 0.5385694249649369,
+     "arima": 0.302945301542777
+    }
+   },
+   "total_shares_deposits": {
+    "n": 713,
+    "median_error": 0.025485737301761176,
+    "median_drift_error": 0.029011846091876778,
+    "skill_vs_drift": 0.12154031077336025,
+    "beats_drift_share": 0.3870967741935484,
+    "ties_drift_share": 0.3576437587657784,
+    "coverage80_mean": 0.7547335203366059,
+    "chosen_share": {
+     "drift": 0.3576437587657784,
+     "ets": 0.36605890603085556,
+     "arima": 0.2762973352033661
+    }
+   },
+   "net_worth_ratio": {
+    "n": 713,
+    "median_error": 0.0027639914115841656,
+    "median_drift_error": 0.0030114515625000024,
+    "skill_vs_drift": 0.08217304704393258,
+    "beats_drift_share": 0.3856942496493689,
+    "ties_drift_share": 0.3800841514726508,
+    "coverage80_mean": 0.7716514726507714,
+    "chosen_share": {
+     "drift": 0.3800841514726508,
+     "ets": 0.3127629733520337,
+     "arima": 0.3071528751753156
+    }
+   }
+  },
+  "Over $10B": {
+   "total_assets": {
+    "n": 25,
+    "median_error": 0.027657809508540115,
+    "median_drift_error": 0.027657809508540115,
+    "skill_vs_drift": 0.0,
+    "beats_drift_share": 0.24,
+    "ties_drift_share": 0.48,
+    "coverage80_mean": 0.7375,
+    "chosen_share": {
+     "drift": 0.48,
+     "ets": 0.48,
+     "arima": 0.04
+    }
+   },
+   "total_loans": {
+    "n": 25,
+    "median_error": 0.02297676465538912,
+    "median_drift_error": 0.03125900923435426,
+    "skill_vs_drift": 0.26495544106570057,
+    "beats_drift_share": 0.68,
+    "ties_drift_share": 0.08,
+    "coverage80_mean": 0.7525,
+    "chosen_share": {
+     "drift": 0.08,
+     "ets": 0.56,
+     "arima": 0.36
+    }
+   },
+   "total_shares_deposits": {
+    "n": 25,
+    "median_error": 0.024056577672874162,
+    "median_drift_error": 0.02601297079395331,
+    "skill_vs_drift": 0.07520836956976518,
+    "beats_drift_share": 0.28,
+    "ties_drift_share": 0.4,
+    "coverage80_mean": 0.705,
+    "chosen_share": {
+     "drift": 0.4,
+     "ets": 0.4,
+     "arima": 0.2
+    }
+   },
+   "net_worth_ratio": {
+    "n": 25,
+    "median_error": 0.002831896466768692,
+    "median_drift_error": 0.0026962880208333323,
+    "skill_vs_drift": -0.050294495575976095,
+    "beats_drift_share": 0.4,
+    "ties_drift_share": 0.32,
+    "coverage80_mean": 0.815,
+    "chosen_share": {
+     "drift": 0.32,
+     "ets": 0.44,
+     "arima": 0.24
+    }
+   }
+  }
+ },
+ "runtime_seconds": 2733
+}

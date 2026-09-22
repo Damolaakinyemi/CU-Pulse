@@ -38,6 +38,8 @@ Capital rolled forward four quarters: pre-loss earnings less any charge-offs abo
 
 Loans are projected at $158.5B by Q2 2027 (80% range $154.8B–$162.4B); the net worth ratio at 11.58%. In Navy Federal's own backtest the selected loans model (Exponential smoothing (damped trend, quarterly seasonal)) had 1.7% mean absolute percentage error, and its 80% ranges held 75% of outcomes: useful for direction, too confident on range.
 
+Across all 4,299 active credit unions, choosing the model on early quarters and scoring it on later ones it never saw, the loans forecast cut median error by 21% against a random walk with drift (4.09% vs 5.17%), beating it for 57% of credit unions, and its 80% ranges held 72% of outcomes.
+
 ## What I would look at next
 
 - **Loan mix.** The Call Report breaks loans out by product (credit card, auto, real estate); charge-offs by product would show where the losses sit.

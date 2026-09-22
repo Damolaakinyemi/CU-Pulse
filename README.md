@@ -11,6 +11,10 @@ Product context lives in [PRODUCT.md](PRODUCT.md); the Navy Federal write-up is 
 | ![Navy Federal dashboard](docs/screenshots/dashboard.png) | ![Forecast fans and backtest](docs/screenshots/forecast.png) |
 | **Stress test** | **Case study** |
 | ![Stress test against the 7% line](docs/screenshots/stress.png) | ![Navy Federal case study](docs/screenshots/case-study.png) |
+| **Forecast accuracy, every credit union** | **Peers** |
+| ![Industry-wide out-of-sample backtest](docs/screenshots/accuracy.png) | ![Peer board](docs/screenshots/peers.png) |
+
+**Headline result:** across all 4,299 active credit unions, scored on quarters the model choice never saw, the loans forecast cuts median error by 21% against a random walk with drift and beats it for 57% of credit unions. Its 80% ranges hold 72% of outcomes, so they are somewhat too narrow, and the app says so.
 
 ## What it does
 
