@@ -1,0 +1,8 @@
+api/.venv/
+__pycache__/
+*.pyc
+.DS_Store
+api/data/raw/
+web/dist/
+.impeccable/review/
+.impeccable/*.local.json
