@@ -11,6 +11,7 @@ export default function Report({ inst, peers, fc, meta }) {
   const now = latest(inst)
   const from = `${Number(inst.latest_quarter.slice(0, 4)) - 4}${inst.latest_quarter.slice(4)}`
   const ready = peers && fc
+  const nwRows = fc ? fanSeries(inst, fc.series.net_worth_ratio, 'net_worth_ratio', from) : []
 
   return (
     <div className="report">
@@ -70,11 +71,11 @@ export default function Report({ inst, peers, fc, meta }) {
           <section>
             <h2>Net worth ratio, reported and projected</h2>
             {fc ? (
-              <FanChart rows={fanSeries(inst, fc.series.net_worth_ratio, 'net_worth_ratio', from)} format={fmt.pct} zones height={210} reveal={false} label="Net worth ratio" />
+              <FanChart rows={nwRows} format={fmt.pct} zones compact height={210} reveal={false} label="Net worth ratio" />
             ) : (
               <Skeleton height={210} />
             )}
-            <FanLegend zones />
+            <FanLegend zones rows={nwRows} />
           </section>
           <section>
             <h2>Total assets, reported and projected</h2>

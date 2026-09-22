@@ -679,6 +679,11 @@ p {
   border-bottom: 1px solid var(--peer);
 }
 
+.swatch.rule-breach {
+  height: 0;
+  border-top: 1.5px solid var(--breach);
+}
+
 .swatch.hatch {
   background: repeating-linear-gradient(-45deg, var(--breach) 0 1px, transparent 1px 4px);
   opacity: 0.7;
@@ -929,9 +934,18 @@ table.data sup {
   margin-left: 1px;
 }
 
-table.data .miss {
-  color: var(--breach);
-  font-weight: 600;
+table.data.pin-first th:first-child,
+table.data.pin-first td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: var(--ground);
+  padding-right: 12px;
+}
+
+.sheet table.data.pin-first th:first-child,
+.sheet table.data.pin-first td:first-child {
+  background: var(--sheet);
 }
 
 /* ───────────── Small multiples ───────────── */
@@ -1089,7 +1103,7 @@ input[type='range']::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   margin-top: -6.5px;
-  border-radius: 50%;
+  border-radius: var(--radius);
   background: var(--sheet);
   border: 2px solid var(--fan);
   box-shadow: 0 1px 3px rgba(14, 26, 43, 0.3);
@@ -1098,7 +1112,7 @@ input[type='range']::-webkit-slider-thumb {
 input[type='range']::-moz-range-thumb {
   width: 13px;
   height: 13px;
-  border-radius: 50%;
+  border-radius: var(--radius);
   background: var(--sheet);
   border: 2px solid var(--fan);
 }
@@ -1392,6 +1406,15 @@ input[type='range']::-moz-range-thumb {
   .bar-meta { display: none; }
   .search { order: 3; width: 100%; }
   .kbd { display: none; }
+  table.data .acct { display: none; }
+  .table-wrap {
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 36px), transparent);
+  }
+  table.data th, table.data td { padding-inline: 8px; }
+  .tabs { flex-wrap: wrap; overflow: visible; column-gap: 18px; }
+  .tabs a, .tabs a:first-child { padding: 9px 0 10px; }
+  .tabs a[aria-current='page']::after, .tabs a:first-child[aria-current='page']::after { left: 0; right: 0; }
   .masthead { grid-template-columns: minmax(0, 1fr); padding-top: 20px; }
   .masthead h1 { font-size: 24px; }
   .vitals { grid-template-columns: repeat(2, minmax(0, 1fr)); }

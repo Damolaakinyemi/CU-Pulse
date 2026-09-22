@@ -1,0 +1,371 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-22T00:00:00Z",
+  "title": "Design System: CU Pulse",
+  "extensions": {
+    "colorMeta": {
+      "fan": {
+        "role": "primary",
+        "displayName": "Staff Ultramarine",
+        "tonalRamp": [
+          "#0d1146",
+          "#161d78",
+          "#1f28a3",
+          "#2833c8",
+          "#5a63e0",
+          "#8f97ff",
+          "#c3c8fb",
+          "#eceefc"
+        ]
+      },
+      "fan-ink": {
+        "role": "primary",
+        "displayName": "Deep Ultramarine"
+      },
+      "fan-50": {
+        "role": "primary",
+        "displayName": "Fan 50% interval"
+      },
+      "fan-80": {
+        "role": "primary",
+        "displayName": "Fan 80% interval"
+      },
+      "fan-95": {
+        "role": "primary",
+        "displayName": "Fan 95% interval"
+      },
+      "fan-wash": {
+        "role": "primary",
+        "displayName": "Ultramarine Wash"
+      },
+      "fan-on-dark": {
+        "role": "primary",
+        "displayName": "Night Periwinkle"
+      },
+      "peer": {
+        "role": "secondary",
+        "displayName": "Peer Graphite",
+        "tonalRamp": [
+          "#262b33",
+          "#3e4550",
+          "#5a626e",
+          "#7b8594",
+          "#9aa2ae",
+          "#b9bfc8",
+          "#d8dce1",
+          "#f0f1f3"
+        ]
+      },
+      "peer-band": {
+        "role": "secondary",
+        "displayName": "Peer Corridor"
+      },
+      "breach": {
+        "role": "tertiary",
+        "displayName": "Brick Breach",
+        "tonalRamp": [
+          "#3d0c09",
+          "#6e1a15",
+          "#912019",
+          "#b3261e",
+          "#d4544b",
+          "#e98c85",
+          "#f5c4c0",
+          "#fbeceb"
+        ]
+      },
+      "breach-wash": {
+        "role": "tertiary",
+        "displayName": "Breach Wash"
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Blue-Black Ink",
+        "tonalRamp": [
+          "#0e1a2b",
+          "#26344a",
+          "#384456",
+          "#5d6878",
+          "#8e99ab",
+          "#b9c1cc",
+          "#d6dbe2",
+          "#f4f5f7"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Ink 2"
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Ink 3"
+      },
+      "ground": {
+        "role": "neutral",
+        "displayName": "Release White"
+      },
+      "sheet": {
+        "role": "neutral",
+        "displayName": "Sheet White"
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Hairline"
+      },
+      "rule-soft": {
+        "role": "neutral",
+        "displayName": "Soft Hairline"
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Strong Rule"
+      },
+      "bar": {
+        "role": "neutral",
+        "displayName": "Night Bar"
+      },
+      "bar-ink": {
+        "role": "neutral",
+        "displayName": "Bar Ink"
+      },
+      "bar-ink-2": {
+        "role": "neutral",
+        "displayName": "Bar Ink 2"
+      },
+      "bar-rule": {
+        "role": "neutral",
+        "displayName": "Bar Rule"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Institution name in the masthead only."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Headline vital values."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Method prose section heads."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Exhibit titles with inline middle-dot qualifier."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Base text, tabular lining figures."
+      },
+      "prose": {
+        "displayName": "Prose",
+        "purpose": "Method long-form reading, 70ch."
+      },
+      "table": {
+        "displayName": "Table",
+        "purpose": "Data tables, right-aligned numerics."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Vital labels, legends, controls, tabs."
+      },
+      "source": {
+        "displayName": "Source",
+        "purpose": "Source line under every exhibit."
+      },
+      "stamp": {
+        "displayName": "Stamp",
+        "purpose": "Uppercase state stamps only (Reported, Projected, Breach, Selected)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "popover",
+        "value": "0 12px 32px -8px rgba(14, 26, 43, 0.35)",
+        "purpose": "Search results listbox."
+      },
+      {
+        "name": "readout",
+        "value": "0 6px 16px -6px rgba(14, 26, 43, 0.3)",
+        "purpose": "Chart hover readout."
+      },
+      {
+        "name": "paper",
+        "value": "0 1px 2px rgba(14, 26, 43, 0.08), 0 16px 40px -16px rgba(14, 26, 43, 0.25)",
+        "purpose": "Report sheet on screen; none in print."
+      },
+      {
+        "name": "thumb",
+        "value": "0 1px 3px rgba(14, 26, 43, 0.3)",
+        "purpose": "Range slider thumb."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "All state transitions and the fan reveal."
+      },
+      {
+        "name": "state-fast",
+        "value": "140ms",
+        "purpose": "Button, tab, and link color/background changes."
+      },
+      {
+        "name": "field",
+        "value": "160ms",
+        "purpose": "Search field border/background on focus."
+      },
+      {
+        "name": "fan-unfold",
+        "value": "900ms clip-path inset(0 100% 0 0) to inset(0)",
+        "purpose": "One-time left-to-right fan reveal from the forecast origin; disabled under prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "1100px"
+      },
+      {
+        "name": "mobile",
+        "value": "720px"
+      },
+      {
+        "name": "print",
+        "value": "letter portrait, 0.45in margin"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Ruled default action; inverts to ink on hover.",
+      "html": "<button class=\"ds-button\">Try again</button>",
+      "css": ".ds-button{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border:1px solid var(--rule-strong,#0e1a2b);border-radius:var(--radius,2px);background:var(--sheet,#fff);color:var(--ink,#0e1a2b);font:600 13px 'Public Sans Variable','Public Sans',system-ui,sans-serif;cursor:pointer;transition:background 140ms cubic-bezier(0.16,1,0.3,1),color 140ms cubic-bezier(0.16,1,0.3,1)}.ds-button:hover{background:var(--ink,#0e1a2b);color:#fff}.ds-button:focus-visible{outline:2px solid var(--fan,#2833c8);outline-offset:2px}"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ink-filled primary action; shifts to deep ultramarine on hover.",
+      "html": "<button class=\"ds-button-primary\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z\"/><path d=\"M14 2v4a2 2 0 0 0 2 2h4\"/></svg>One-page report</button>",
+      "css": ".ds-button-primary{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border:1px solid var(--ink,#0e1a2b);border-radius:var(--radius,2px);background:var(--ink,#0e1a2b);color:#fff;font:600 13px 'Public Sans Variable','Public Sans',system-ui,sans-serif;cursor:pointer;transition:background 140ms cubic-bezier(0.16,1,0.3,1)}.ds-button-primary:hover{background:var(--fan-ink,#1f28a3);border-color:var(--fan-ink,#1f28a3)}.ds-button-primary:focus-visible{outline:2px solid var(--fan,#2833c8);outline-offset:2px}"
+    },
+    {
+      "name": "Stamps",
+      "kind": "chip",
+      "refersTo": "stamp-projected",
+      "description": "State stamps: Reported, Projected, Breach, Selected. Never color alone.",
+      "html": "<span class=\"ds-stamp ds-rep\">Reported</span> <span class=\"ds-stamp ds-proj\">Projected</span> <span class=\"ds-stamp ds-breach\">Breach</span> <span class=\"ds-stamp ds-sel\">Selected</span>",
+      "css": ".ds-stamp{display:inline-flex;align-items:center;height:18px;padding:0 6px;font:700 10.5px 'Public Sans Variable','Public Sans',system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;border:1px solid currentColor;border-radius:2px}.ds-rep{color:#384456}.ds-proj{color:#1f28a3;background:#eceefc}.ds-breach{color:#b3261e;background:#fbeceb}.ds-sel{color:#fff;background:#1f28a3;border-color:#1f28a3}"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "custom",
+      "refersTo": "segmented-active",
+      "description": "Hairline toggle group; pressed segment fills ink.",
+      "html": "<div class=\"ds-seg\" role=\"group\"><button aria-pressed=\"true\">Level</button><button aria-pressed=\"false\">Growth</button></div>",
+      "css": ".ds-seg{display:inline-flex;border:1px solid #d6dbe2;border-radius:2px}.ds-seg button{border:0;background:transparent;padding:3px 9px;font:600 12px 'Public Sans Variable','Public Sans',system-ui,sans-serif;color:#5d6878;cursor:pointer}.ds-seg button+button{border-left:1px solid #d6dbe2}.ds-seg button[aria-pressed=true]{background:#0e1a2b;color:#fff}.ds-seg button:not([aria-pressed=true]):hover{color:#0e1a2b}.ds-seg button:focus-visible{outline:2px solid #2833c8;outline-offset:2px}"
+    },
+    {
+      "name": "Institution Search",
+      "kind": "input",
+      "refersTo": "search-field",
+      "description": "Dark-bar combobox field with a key hint; focus brightens to periwinkle.",
+      "html": "<div style=\"background:#0e1a2b;padding:9px\"><label class=\"ds-search\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"11\" cy=\"11\" r=\"8\"/><path d=\"m21 21-4.3-4.3\"/></svg><input placeholder=\"Credit union, city, state or charter\"><span class=\"ds-kbd\">⌘K</span></label></div>",
+      "css": ".ds-search{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;background:#182538;border:1px solid #2c3b53;border-radius:2px;color:#a9b3c3;transition:border-color 160ms cubic-bezier(0.16,1,0.3,1)}.ds-search:focus-within{border-color:#7d87f2;background:#1c2a40}.ds-search input{flex:1;min-width:0;border:0;background:transparent;outline:none;color:#eef1f6;font:13px 'Public Sans Variable','Public Sans',system-ui,sans-serif}.ds-search input::placeholder{color:#8e99ab}.ds-kbd{font-size:11px;line-height:1;padding:3px 5px;border:1px solid #3a4a64;border-radius:2px}"
+    },
+    {
+      "name": "Section Tabs",
+      "kind": "nav",
+      "refersTo": "tab-active",
+      "description": "Tabs on a strong ink rule; current tab carries a 3px ultramarine underline.",
+      "html": "<nav class=\"ds-tabs\"><a href=\"#\" aria-current=\"page\">Overview</a><a href=\"#\">Trends</a><a href=\"#\">Forecast</a><a href=\"#\">Peers</a></nav>",
+      "css": ".ds-tabs{display:flex;border-bottom:1px solid #0e1a2b;font:600 13px 'Public Sans Variable','Public Sans',system-ui,sans-serif}.ds-tabs a{position:relative;padding:10px 16px 11px;color:#5d6878;text-decoration:none;transition:color 140ms cubic-bezier(0.16,1,0.3,1)}.ds-tabs a:first-child{padding-left:0}.ds-tabs a:hover,.ds-tabs a[aria-current=page]{color:#0e1a2b}.ds-tabs a[aria-current=page]::after{content:'';position:absolute;left:16px;right:16px;bottom:-1px;height:3px;background:#2833c8}.ds-tabs a:first-child[aria-current=page]::after{left:0}.ds-tabs a:focus-visible{outline:2px solid #2833c8;outline-offset:2px}"
+    },
+    {
+      "name": "Exhibit",
+      "kind": "card",
+      "refersTo": "exhibit",
+      "description": "Signature container: title with inline qualifier, strong rule, body, source line. No box, no shadow.",
+      "html": "<section class=\"ds-exhibit\"><header><h2>Net worth ratio<span> · reported and projected four quarters</span></h2></header><div class=\"ds-ex-body\">Chart body</div><p class=\"ds-source\">Source: NCUA 5300 Call Report, ACCT_997 ÷ ACCT_010, Q1 2018–Q2 2026.</p></section>",
+      "css": ".ds-exhibit{font-family:'Public Sans Variable','Public Sans',system-ui,sans-serif;color:#0e1a2b;font-variant-numeric:tabular-nums lining-nums}.ds-exhibit header{padding-bottom:8px;border-bottom:1px solid #0e1a2b}.ds-exhibit h2{margin:0;font-size:15px;font-weight:700;letter-spacing:-.01em}.ds-exhibit h2 span{font-weight:450;color:#5d6878}.ds-ex-body{padding-top:12px;min-height:60px;font-size:14px}.ds-source{margin:8px 0 0;padding-top:7px;border-top:1px solid #e7eaee;font-size:11.5px;line-height:1.5;color:#5d6878}"
+    },
+    {
+      "name": "Vital with Percentile Rule",
+      "kind": "custom",
+      "refersTo": "vital",
+      "description": "Headline metric: label, figure, change, and peer percentile on a rule.",
+      "html": "<div class=\"ds-vital\"><div class=\"ds-vl\">Net worth ratio</div><div class=\"ds-vv\">11.65%</div><div class=\"ds-vc\"><b>+0.28 pts q/q</b></div><div class=\"ds-track\"><i class=\"ds-iqr\" style=\"left:30%;width:25%\"></i><i class=\"ds-med\" style=\"left:42%\"></i><i class=\"ds-mark\" style=\"left:60%\"></i></div><div class=\"ds-cap\"><span>72nd pctl of peers</span><span>higher is stronger</span></div></div>",
+      "css": ".ds-vital{display:grid;gap:4px;max-width:220px;font-family:'Public Sans Variable','Public Sans',system-ui,sans-serif;font-variant-numeric:tabular-nums lining-nums;color:#0e1a2b}.ds-vl{font-size:12px;font-weight:600;color:#384456}.ds-vv{font-size:28px;font-weight:650;letter-spacing:-.02em;line-height:1.15}.ds-vc{font-size:12px}.ds-vc b{color:#384456;font-weight:600}.ds-track{position:relative;height:14px;margin-top:10px}.ds-track::before{content:'';position:absolute;left:0;right:0;top:7px;height:1px;background:#d6dbe2}.ds-iqr{position:absolute;top:4px;height:7px;background:rgba(123,133,148,.2);border-left:1px solid #7b8594;border-right:1px solid #7b8594}.ds-med{position:absolute;top:2px;width:1px;height:11px;background:#7b8594}.ds-mark{position:absolute;top:2px;width:11px;height:11px;margin-left:-5.5px;background:#0e1a2b;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #0e1a2b}.ds-cap{display:flex;justify-content:space-between;font-size:11px;color:#5d6878;margin-top:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Staff Forecast Exhibit",
+    "overview": "CU Pulse reads every credit union the way a central-bank staff forecast or statistical release reads an economy. Reported history is drawn in blue-black ink; the projection is a graded ultramarine probability fan; peers are a graphite corridor; regulation is a set of ruled, hatched zones in brick red. The page is a stack of exhibits, each with a bold title, a hairline-ruled body, and a small source line naming account codes and quarters beneath it.\n\nThe density is that of an analyst's desk document: 14px base type, tabular lining figures everywhere, hairline rules instead of cards, square 2px corners, and almost no chrome. A single dark top bar carries the wordmark, the institution search, and the as-of filing; everything below sits on a cool release-white ground. Color is rationed: ink for fact, ultramarine for projection and interaction, graphite for peers, red for something wrong.\n\nThe system refuses the KPI-card SaaS dashboard (no tiles, no rounded panels, no drop-shadowed metric cards) and the neon trading terminal (no dark canvas, no glowing accents).",
+    "keyCharacteristics": [
+      "Hairline table rules structure every surface; strong ink rules sit under exhibit titles and table heads.",
+      "One committed accent hue, ultramarine, meaning \"projected\" or \"interactive\".",
+      "Reported, Projected, and Breach are stamped states in text and outline, never color alone.",
+      "Public Sans with tabular lining numerals site-wide.",
+      "A source line under every exhibit.",
+      "Print-first one-page report sheet."
+    ],
+    "rules": [
+      {
+        "name": "The One Fan Rule",
+        "body": "Ultramarine means projected or interactive. Reported values are never drawn in it, and no second accent hue exists.",
+        "section": "colors"
+      },
+      {
+        "name": "The Red Means Wrong Rule",
+        "body": "Brick red appears only when something is wrong: a regulatory threshold or breach, a flagged anomaly, a failure. Never as decoration, never simply for \"negative\".",
+        "section": "colors"
+      },
+      {
+        "name": "The Stamp, Not Swatch Rule",
+        "body": "Reported, Projected, and Breach are distinguished by a text stamp, line style (solid ink vs dashed ultramarine), or hatching as well as hue. Color is never the only signal.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Figures Rule",
+        "body": "Every number on every surface is tabular and lining; right-align numeric table columns.",
+        "section": "typography"
+      },
+      {
+        "name": "The Middle-Dot Qualifier Rule",
+        "body": "Titles carry their qualifier inline after \" · \" in lighter weight and ink-3, never as a separate line above or below.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flush-Left Rule",
+        "body": "The first cell of any ruled row (vitals, outcomes, tabs, table first column) has no left padding, so content aligns to the container edge.",
+        "section": "layout"
+      },
+      {
+        "name": "The Rules Not Cards Rule",
+        "body": "Exhibits and metrics are never boxed or shadowed. A strong ink rule under the title and soft hairlines inside do the separating.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** put a source line under every exhibit, naming account codes and quarters.",
+      "**Do** draw reported values in solid ink and projections in dashed deep ultramarine with the three-density fan, with a legend swatch for each.",
+      "**Do** use stamps (Reported, Projected, Breach) wherever state could otherwise be read from hue alone.",
+      "**Do** separate with hairline rules (`rule`, `rule-soft`) and a strong ink rule under titles and table heads.",
+      "**Do** keep every control and container at the 2px radius; circles are for data marks only.",
+      "**Do** keep numbers tabular and lining, and right-align numeric columns."
+    ],
+    "donts": [
+      "**Don't** box metrics or exhibits in rounded, shadowed cards; shadows belong to floating layers and the paper sheet only.",
+      "**Don't** introduce a second accent hue or use ultramarine for reported history.",
+      "**Don't** use brick red for anything that isn't wrong (breach, flagged anomaly, failure).",
+      "**Don't** use uppercase outside stamps, and don't put small uppercase labels above headings.",
+      "**Don't** move to a dark canvas; the night bar is the only dark surface, apart from the stress severity panel."
+    ]
+  }
+}

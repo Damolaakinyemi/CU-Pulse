@@ -37,14 +37,18 @@ export default function Stress({ inst, fc }) {
   const cushion = end.netWorth - WELL_CAPITALIZED * end.assets
   const nwFc = fc?.series?.net_worth_ratio
 
+  // The scenario carries the statistical model's own uncertainty: its 50/80% half-widths
+  // at each horizon are laid around the scenario path, so the fan moves with the levers.
   const rows = path.map((p, i) => {
     const f = i > 0 ? nwFc?.path[i - 1] : null
+    const band = (lo, hi) => (f ? [p.ratio - (f[hi] - f[lo]) / 2, p.ratio + (f[hi] - f[lo]) / 2] : null)
     return {
       quarter: p.quarter,
       stress: p.ratio,
       netWorth: p.netWorth,
       baseline: i === 0 ? p.ratio : f?.point ?? null,
-      b80: i === 0 ? [p.ratio, p.ratio] : f ? [f.lo80, f.hi80] : null,
+      s80: i === 0 ? [p.ratio, p.ratio] : band('lo80', 'hi80'),
+      s50: i === 0 ? [p.ratio, p.ratio] : band('lo50', 'hi50'),
       origin: i === 0,
     }
   })
@@ -141,7 +145,7 @@ export default function Stress({ inst, fc }) {
         title="Net worth ratio under the scenario"
         sub="four quarters"
         tools={firstBreach ? <Stamp kind="breach">Below 7% in {quarter(firstBreach.quarter)}</Stamp> : <Stamp kind="projected">Stays well capitalized</Stamp>}
-        source="Scenario path: quarterly net worth rolls forward by pre-loss earnings less incremental charge-offs on a loan book held at today's share of assets; assets compound at the chosen growth rate. Dashed line and band: the statistical model's baseline and 80% range, for comparison."
+        source="Scenario path: quarterly net worth rolls forward by pre-loss earnings less incremental charge-offs on a loan book held at today's share of assets; assets compound at the chosen growth rate. The shaded fan around it is the statistical model's own 50% and 80% spread at each horizon. Dashed line: the model's baseline projection."
       >
         <div className="outcomes">
           <div className="outcome">
@@ -150,7 +154,7 @@ export default function Stress({ inst, fc }) {
             <span className="d">{bp(end.ratio - base.netWorth / base.assets)} vs {quarter(base.quarter)}</span>
           </div>
           <div className="outcome">
-            <span className="k">Cushion over 7%</span>
+            <span className="k">Cushion over 7% at {quarter(end.quarter)}</span>
             <span className={`v ${cushion < 0 ? 'breach' : ''}`}>{usd(cushion)}</span>
             <span className="d">net worth above the well-capitalized line</span>
           </div>
@@ -168,7 +172,7 @@ export default function Stress({ inst, fc }) {
         <div className="legend" style={{ marginTop: 8 }}>
           <span><i className="swatch line" /> Scenario</span>
           <span><i className="swatch dash" /> Model baseline</span>
-          <span><i className="swatch" style={{ background: 'rgba(40,51,200,0.24)' }} /> Baseline 80% range</span>
+          <span><i className="swatch fan" /> Scenario 50 · 80% ranges</span>
           <span><i className="swatch hatch" /> Below well capitalized</span>
         </div>
       </Exhibit>

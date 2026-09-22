@@ -69,12 +69,12 @@ export default function Forecast({ inst, fc, fcState }) {
               series.skill_vs_drift != null ? `, ${Math.round(series.skill_vs_drift * 100)}% lower backtest error than drift` : ''
             }.`}
           >
-            <FanChart rows={fanSeries(inst, series, k, from)} format={f} zones={k === 'net_worth_ratio'} height={260} label={series.label} />
+            <FanChart rows={fanSeries(inst, series, k, from)} format={f} zones={k === 'net_worth_ratio'} ratio={k === 'net_worth_ratio'} compact height={260} label={series.label} />
           </Exhibit>
         )
       })}
       <div className="span-12" style={{ marginTop: -20 }}>
-        <FanLegend zones />
+        <FanLegend zones rows={fc.series.net_worth_ratio ? fanSeries(inst, fc.series.net_worth_ratio, 'net_worth_ratio', from) : null} />
       </div>
 
       <Exhibit
@@ -212,7 +212,7 @@ export default function Forecast({ inst, fc, fcState }) {
                       <td>{f(t.actual)}</td>
                       <td>{err}</td>
                       <td className="muted">{f(t.lo80)} – {f(t.hi80)}</td>
-                      <td className={inside ? '' : 'miss'}>{inside ? 'Yes' : 'No'}</td>
+                      <td>{inside ? <span className="muted">Inside</span> : <Stamp kind="reported">Outside</Stamp>}</td>
                     </tr>
                   )
                 })}

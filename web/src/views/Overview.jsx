@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Exhibit, Skeleton, Stamp } from '../components/Chrome.jsx'
 import { FanChart, FanLegend, PeerLegend, TrendChart } from '../components/Charts.jsx'
 import { fanSeries, metricSeries, reading } from '../lib/analysis.js'
@@ -21,13 +22,26 @@ export function Reading({ inst, peers, fc }) {
   )
 }
 
+/** True below the phone breakpoint, where plots are too narrow for long in-chart labels. */
+function useNarrow(query = '(max-width: 720px)') {
+  const [narrow, setNarrow] = useState(() => window.matchMedia(query).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(query)
+    const on = () => setNarrow(mq.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [query])
+  return narrow
+}
+
 const HISTORY_FROM = (inst, years) => {
   const last = inst.quarters[inst.quarters.length - 1].quarter
   return `${Number(last.slice(0, 4)) - years}${last.slice(4)}`
 }
 
 export function BalanceTable({ inst, quarters = 5 }) {
-  const rows = inst.quarters.slice(-quarters)
+  // Latest filing first, as in a statistical release; the line-item column stays pinned when scrolled.
+  const rows = inst.quarters.slice(-quarters).reverse()
   const lines = [
     ['Total assets', 'ACCT_010', 'total_assets', usd],
     ['Total loans and leases', 'ACCT_025B', 'total_loans', usd],
@@ -41,11 +55,11 @@ export function BalanceTable({ inst, quarters = 5 }) {
   ]
   return (
     <div className="table-wrap">
-      <table className="data">
+      <table className="data pin-first">
         <thead>
           <tr>
             <th scope="col">Line item</th>
-            <th scope="col" className="muted">Account</th>
+            <th scope="col" className="muted acct">Account</th>
             {rows.map((r) => (
               <th scope="col" key={r.quarter}>{quarter(r.quarter)}</th>
             ))}
@@ -55,7 +69,7 @@ export function BalanceTable({ inst, quarters = 5 }) {
           {lines.map(([label, acct, key, f]) => (
             <tr key={key}>
               <th scope="row" style={{ fontWeight: 500 }}>{label}</th>
-              <td className="muted">{acct}</td>
+              <td className="muted acct">{acct}</td>
               {rows.map((r) => (
                 <td key={r.quarter}>{f(r[key])}</td>
               ))}
@@ -68,6 +82,7 @@ export function BalanceTable({ inst, quarters = 5 }) {
 }
 
 export default function Overview({ inst, peers, fc, fcState, meta }) {
+  const narrow = useNarrow()
   const from = HISTORY_FROM(inst, 5)
   const nw = fanSeries(inst, fc?.series?.net_worth_ratio, 'net_worth_ratio', from)
   const trend = (key) => (peers ? metricSeries(inst, peers, key, from) : null)
@@ -80,11 +95,11 @@ export default function Overview({ inst, peers, fc, fcState, meta }) {
         id="ex-nw"
         title="Net worth ratio"
         sub="reported and projected four quarters"
-        tools={<FanLegend zones />}
+        tools={<FanLegend zones rows={nw} />}
         source={`Source: NCUA 5300 Call Report, ACCT_997 ÷ ACCT_010, ${quarter(meta.first_quarter)}–${quarter(inst.latest_quarter)}. Projection: ${fc?.series?.net_worth_ratio?.model_label ?? 'pending'}; shaded bands are 50, 80 and 95% ranges. Zones: NCUA prompt corrective action, 12 CFR 702.102.`}
       >
         {fc || fcState.error ? (
-          <FanChart rows={nw} format={fmt.pct} zones height={430} label="Net worth ratio" />
+          <FanChart rows={nw} format={fmt.pct} zones compact={narrow} height={narrow ? 300 : 430} label="Net worth ratio" />
         ) : (
           <Skeleton height={430} />
         )}
