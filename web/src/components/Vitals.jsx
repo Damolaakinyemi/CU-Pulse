@@ -23,6 +23,9 @@ export default function Vitals({ inst, peers, meta }) {
           <div className="vital" role="listitem" key={key}>
             <div className="vital-label">
               <span>{def.label}</span>
+              <span className="prov" title={key === 'net_worth_ratio' ? 'As reported to NCUA (ACCT_998)' : `Derived: ${def.formula}`}>
+                {key === 'net_worth_ratio' && inst.net_worth_ratio_source === 'reported' ? 'As filed' : 'Derived'}
+              </span>
             </div>
             <div className="vital-value">{pct(v, key.includes('growth') ? 1 : 2)}</div>
             <div className="vital-change">

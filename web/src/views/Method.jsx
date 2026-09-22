@@ -6,6 +6,8 @@ export default function Method({ meta, peers, fc }) {
     <div className="grid">
       <nav className="span-3 toc" aria-label="On this page">
         <a href="#m-data">Data</a>
+        <a href="#m-notes">Data notes</a>
+        <a href="#m-updates">Updates</a>
         <a href="#m-defs">Definitions</a>
         <a href="#m-peers">Peers</a>
         <a href="#m-forecast">Forecast</a>
@@ -26,6 +28,57 @@ export default function Method({ meta, peers, fc }) {
           <code>python -m pipeline.ncua --download</code>. Source:{' '}
           <a href={meta.source_url} target="_blank" rel="noreferrer">NCUA quarterly Call Report data</a>.
         </p>
+
+        <h2 id="m-notes">Data notes</h2>
+        <p>Every figure in CU Pulse is one of three kinds, and the app labels which:</p>
+        <ul>
+          <li>
+            <b>As filed.</b> Balances (assets, loans, shares, net worth, delinquent loans, members) and the net worth ratio
+            are exactly what each credit union reported on its Call Report.
+          </li>
+          <li>
+            <b>Derived.</b> Growth rates, delinquency rate, ROA, net charge-off rate and loan-to-share are calculated here
+            from filed balances using Financial Performance Report conventions. They can differ slightly from NCUA’s own
+            FPR, which uses additional averaging.
+          </li>
+          <li>
+            <b>Model output.</b> Projections, the computed reading, peer percentiles and stress results are produced by CU
+            Pulse. They are not NCUA data or NCUA assessments.
+          </li>
+        </ul>
+        <p>
+          <b>Net worth ratio.</b> CU Pulse shows the ratio each credit union reported to NCUA (<code>ACCT_998</code>),
+          which is the figure prompt corrective action uses. It can differ from total net worth ÷ quarter-end assets
+          because NCUA lets credit unions measure total assets as an average (daily, monthly or quarter-end), and because
+          CECL transition relief adds to net worth for this purpose. For most credit unions the two agree to within 0.01
+          point; where they differ by more than 0.05 point, the Overview shows both.
+        </p>
+        <p>
+          <b>Names.</b> Credit unions appear under NCUA’s short listing names, which can drop “Federal Credit Union” or
+          use a nickname (for example, “Pentagon” for PenFed). The charter number is the reliable identifier.
+        </p>
+        <p>
+          <b>Extreme values.</b> Very small, new or liquidating credit unions can report ratios that look impossible,
+          such as a negative net worth ratio or ROA above 100%. CU Pulse shows them as filed rather than hiding them.
+        </p>
+        <p>
+          <b>Mergers.</b> When one credit union absorbs another, its balances jump. Year-over-year growth of 40% or more
+          is flagged in the peer table, but forecasts do not adjust for mergers.
+        </p>
+
+        <h2 id="m-updates">Updates</h2>
+        {meta.updates?.enabled ? (
+          <p>
+            CU Pulse checks ncua.gov every {meta.updates.interval_hours} hours for the next quarter’s file and re-checks the
+            two most recent quarters for amendments, which NCUA re-posts when credit unions refile. New data is loaded
+            without a restart. NCUA usually publishes a quarter about two months after it ends. Last check:{' '}
+            {meta.updates.checked_at ? new Date(meta.updates.checked_at).toLocaleString('en-US') : 'pending'}
+            {meta.updates.awaiting ? `; waiting for ${quarter(`${meta.updates.awaiting.slice(0, 4)}Q${Number(meta.updates.awaiting.slice(5)) / 3}`)}` : ''}
+            {meta.updates.error ? `. The last check could not reach NCUA (${meta.updates.error}); the next one will retry.` : '.'}
+          </p>
+        ) : (
+          <p>Automatic checks are turned off on this server. Run <code>python -m pipeline.ncua --update</code> to pull new quarters.</p>
+        )}
 
         <h2 id="m-defs">Definitions</h2>
         <p>

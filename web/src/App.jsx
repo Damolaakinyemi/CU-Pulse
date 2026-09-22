@@ -1,5 +1,5 @@
 import { FileText } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { api, retry, useResource } from './api.js'
 import { ErrorNotice, Skeleton } from './components/Chrome.jsx'
 import Search from './components/Search.jsx'
@@ -65,6 +65,31 @@ function Masthead({ inst, section }) {
   )
 }
 
+function sinceText(iso) {
+  if (!iso) return 'not yet'
+  const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000)
+  if (mins < 2) return 'just now'
+  if (mins < 90) return `${mins} min ago`
+  const hrs = Math.round(mins / 60)
+  return hrs < 36 ? `${hrs} h ago` : `${Math.round(hrs / 24)} days ago`
+}
+
+/** Polls the API for a newer NCUA quarter than the one on screen. */
+function useNewQuarter(loadedQuarter) {
+  const [status, setStatus] = useState(null)
+  useEffect(() => {
+    if (!loadedQuarter) return undefined
+    const poll = () =>
+      api
+        .meta()
+        .then((m) => setStatus({ quarter: m.latest_quarter, updates: m.updates }))
+        .catch(() => {})
+    const t = setInterval(poll, 30 * 60 * 1000)
+    return () => clearInterval(t)
+  }, [loadedQuarter])
+  return status && status.quarter !== loadedQuarter ? status : null
+}
+
 function Loading() {
   return (
     <div aria-busy="true" aria-label="Loading credit union">
@@ -102,6 +127,9 @@ export default function App() {
   useEffect(() => {
     window.scrollTo({ top: 0 })
   }, [cu, route.section])
+
+  const fresh = useNewQuarter(meta.data?.latest_quarter)
+  const updates = meta.data?.updates
 
   const reload = (keys) => () => {
     keys.forEach(retry)
@@ -149,13 +177,24 @@ export default function App() {
           <Search section={section} />
           {meta.data && (
             <div className="bar-meta">
-              <span>Latest filing <strong>{quarter(meta.data.latest_quarter)}</strong></span>
+              <span title={updates?.enabled ? `CU Pulse checks ncua.gov every ${updates.interval_hours} h for new and amended quarters.${updates.error ? ` Last check failed: ${updates.error}` : ''}` : 'Automatic NCUA checks are off.'}>
+                Latest filing <strong>{quarter(meta.data.latest_quarter)}</strong>
+                {updates?.enabled && ` · NCUA checked ${sinceText(updates.checked_at)}`}
+              </span>
               <span className="optional"><strong>{count(meta.data.active_count)}</strong> credit unions · {usd(meta.data.industry_assets)}</span>
               <span className="optional">Source <strong>NCUA 5300</strong></span>
             </div>
           )}
         </div>
       </header>
+      {fresh && (
+        <div className="update-banner no-print" role="status">
+          <div className="inner">
+            <span>NCUA has published {quarter(fresh.quarter)} Call Report data. The figures on screen are from {quarter(meta.data.latest_quarter)}.</span>
+            <button type="button" onClick={() => window.location.reload()}>Load {quarter(fresh.quarter)}</button>
+          </div>
+        </div>
+      )}
       <div className="page">{body}</div>
       {section !== 'report' && (
         <footer className="footer">

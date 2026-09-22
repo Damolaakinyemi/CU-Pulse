@@ -53,6 +53,11 @@ export default function Forecast({ inst, fc, fcState }) {
 
   return (
     <div className="grid">
+      <p className="span-12 figure-notes">
+        <b>Model output, not NCUA data.</b> These are statistical extrapolations of each credit union’s own filings. They
+        know nothing about rates, management plans or pending mergers, and an acquisition inside the history reads as
+        growth. The backtest below shows how far off they have been.
+      </p>
       {available.map((k) => {
         const series = fc.series[k]
         const end = series.path[series.path.length - 1]

@@ -32,6 +32,22 @@ npm install
 npm run dev
 ```
 
+## Staying current with NCUA
+
+While the API runs, it checks ncua.gov every 24 hours for the next quarter's Call Report file, and re-checks the two most recent quarters for amendments. When anything changed, it rebuilds the panel and swaps it in without a restart. Open pages show a banner offering to load the new quarter. NCUA usually publishes about two months after quarter end.
+
+- Change the interval with `CUPULSE_UPDATE_HOURS` (e.g. `CUPULSE_UPDATE_HOURS=6`); `0` turns checks off.
+- Run a check by hand: `.venv/bin/python -m pipeline.ncua --update`.
+- Status (last check, the quarter it is waiting for, any error) is in `/api/meta` under `updates` and on the Method page.
+
+## Accuracy
+
+- **As filed:** balances and the net worth ratio (NCUA's reported `ACCT_998`, the figure prompt corrective action uses).
+- **Derived:** growth, delinquency, ROA, net charge-offs and loan-to-share, calculated with FPR conventions; they can differ slightly from NCUA's own FPR.
+- **Model output:** forecasts, the generated reading, peer percentiles and stress results.
+
+The Method page's Data notes cover names, extreme values and mergers.
+
 ## Layout
 
 - `api/pipeline/ncua.py`: downloads and parses the Call Report zips (`FOICU`, `FS220`, `FS220A`) into `data/processed/call_reports.csv.gz`

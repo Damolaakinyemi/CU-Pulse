@@ -15,8 +15,8 @@ import pandas as pd
 DEFINITIONS = {
     "net_worth_ratio": {
         "label": "Net worth ratio",
-        "formula": "Total net worth ÷ total assets",
-        "accounts": ["ACCT_997", "ACCT_010"],
+        "formula": "As reported to NCUA (ACCT_998); total net worth ÷ total assets where not reported",
+        "accounts": ["ACCT_998", "ACCT_997", "ACCT_010"],
         "better": "higher",
     },
     "loan_growth_yoy": {
@@ -118,7 +118,13 @@ def derive(raw: pd.DataFrame) -> pd.DataFrame:
         df["loan_growth_yoy"] = df["total_loans"] / df["total_loans_py"] - 1
         df["deposit_growth_yoy"] = df["total_shares_deposits"] / df["total_shares_deposits_py"] - 1
         df["asset_growth_yoy"] = df["total_assets"] / df["total_assets_py"] - 1
-        df["net_worth_ratio"] = df["net_worth"] / df["total_assets"]
+        # NCUA's reported ratio is authoritative for PCA: credit unions may measure total
+        # assets as an average rather than quarter-end, and CECL transition relief adds to
+        # net worth. The simple quotient is kept as a fallback and for transparency.
+        df["net_worth_ratio_computed"] = df["net_worth"] / df["total_assets"]
+        reported = df["nwr_reported_bp"] / 10000 if "nwr_reported_bp" in df else pd.Series(np.nan, index=df.index)
+        df["net_worth_ratio_source"] = np.where(reported.notna(), "reported", "computed")
+        df["net_worth_ratio"] = reported.fillna(df["net_worth_ratio_computed"])
         df["delinquency_rate"] = df["delinquent_loans"] / df["total_loans"]
         df["roa"] = df["net_income_ytd"] * annualize / avg_assets
         df["net_charge_off_rate"] = (df["charge_offs_ytd"] - df["recoveries_ytd"]) * annualize / avg_loans

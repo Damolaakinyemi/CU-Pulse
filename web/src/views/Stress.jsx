@@ -57,6 +57,11 @@ export default function Stress({ inst, fc }) {
 
   return (
     <div className="grid">
+      <p className="span-12 figure-notes">
+        <b>Illustrative, not a supervisory stress test.</b> The scenario is transparent capital arithmetic starting from
+        the net worth ratio reported to NCUA for {quarter(base.quarter)}. It is not NCUA or credit-union stress-testing
+        methodology and does not model risk-based capital.
+      </p>
       <Exhibit
         className="span-4"
         id="stress-controls"

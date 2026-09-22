@@ -66,14 +66,14 @@ export function reading(inst, peers, fc) {
   const nwPeer = latestPeer(peers, 'net_worth_ratio')
 
   if (isNum(now.net_worth_ratio)) {
-    const cushion = now.net_worth - WELL_CAPITALIZED * now.total_assets
+    const cushion = (now.net_worth_ratio - WELL_CAPITALIZED) * now.total_assets
     items.push({
       k: 'Capital',
       parts: [
         'Net worth ratio of ', { b: pct(now.net_worth_ratio) }, ` (${tier?.toLowerCase() ?? 'tier unknown'})`,
         prev && isNum(prev.net_worth_ratio) ? `, ${pts(now.net_worth_ratio - prev.net_worth_ratio)} on the quarter` : '',
         nwPeer ? `; ${standing(nwPeer)} of ${peers.peer_count} size peers (median ${pct(nwPeer.median)})` : '',
-        isNum(cushion) ? `. ${usd(cushion)} of net worth above the 7% well-capitalized line.` : '.',
+        isNum(cushion) ? `. About ${usd(cushion)} of net worth above the 7% well-capitalized line.` : '.',
       ],
     })
   }
@@ -149,9 +149,12 @@ export function stressBaseline(inst, fc) {
   const now = latest(inst)
   const a = fc?.series?.total_assets
   const growth = a ? a.path[a.path.length - 1].point / now.total_assets - 1 : now.asset_growth_yoy ?? now.deposit_growth_yoy ?? 0.04
+  // Start from NCUA's reported ratio: net worth as PCA measures it, which can differ from
+  // the balance-sheet figure (average-asset measurement, CECL transition relief).
+  const ratio = isNum(now.net_worth_ratio) ? now.net_worth_ratio : now.net_worth / now.total_assets
   return {
     assets: now.total_assets,
-    netWorth: now.net_worth,
+    netWorth: ratio * now.total_assets,
     loanShare: now.total_loans / now.total_assets,
     roa: isNum(now.roa) ? now.roa : 0,
     nco: isNum(now.net_charge_off_rate) ? now.net_charge_off_rate : 0,
@@ -208,4 +211,9 @@ export function scenarioAt(base, severity) {
     nco: base.nco + SEVERE.nco * s,
     roaShift: SEVERE.roa * s,
   }
+}
+
+/** Reported and simple-quotient net worth ratios differ by more than 5 bp. */
+export function nwrGap(q) {
+  return isNum(q?.net_worth_ratio) && isNum(q?.net_worth_ratio_computed) && Math.abs(q.net_worth_ratio - q.net_worth_ratio_computed) > 0.0005
 }

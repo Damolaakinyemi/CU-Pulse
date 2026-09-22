@@ -521,6 +521,57 @@ p {
   border-color: var(--fan-ink);
 }
 
+.prov {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.figure-notes {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 120ch;
+  margin-bottom: -12px;
+}
+
+.figure-notes b {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.update-banner {
+  background: var(--fan-ink);
+  color: #fff;
+  font-size: 13px;
+}
+
+.update-banner .inner {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 8px var(--pad);
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.update-banner button {
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 4px 12px;
+  border-radius: var(--radius);
+}
+
+.update-banner button:hover {
+  background: #fff;
+  color: var(--fan-ink);
+}
+
 /* Percentile on a rule */
 .pctl {
   margin-top: 10px;
