@@ -28,10 +28,10 @@ colors:
 typography:
   display:
     fontFamily: "Public Sans Variable, Public Sans, system-ui, -apple-system, Segoe UI, sans-serif"
-    fontSize: "30px"
-    fontWeight: 700
-    lineHeight: 1.1
-    letterSpacing: "-0.02em"
+    fontSize: "32px"
+    fontWeight: 720
+    lineHeight: 1.08
+    letterSpacing: "-0.028em"
     fontFeature: "tnum, lnum"
   figure:
     fontFamily: "Public Sans Variable, Public Sans, system-ui, sans-serif"
@@ -47,7 +47,7 @@ typography:
     letterSpacing: "-0.01em"
   title:
     fontFamily: "Public Sans Variable, Public Sans, system-ui, sans-serif"
-    fontSize: "15px"
+    fontSize: "16px"
     fontWeight: 700
     letterSpacing: "-0.01em"
   body:
@@ -58,7 +58,7 @@ typography:
     fontFeature: "tnum, lnum"
   prose:
     fontFamily: "Public Sans Variable, Public Sans, system-ui, sans-serif"
-    fontSize: "14.5px"
+    fontSize: "15px"
     fontWeight: 400
     lineHeight: 1.62
   table:
@@ -72,7 +72,7 @@ typography:
     fontWeight: 600
   source:
     fontFamily: "Public Sans Variable, Public Sans, system-ui, sans-serif"
-    fontSize: "11.5px"
+    fontSize: "12px"
     fontWeight: 400
     lineHeight: 1.5
   stamp:
@@ -85,7 +85,8 @@ rounded:
 spacing:
   gutter: "24px"
   pad: "32px"
-  section: "36px"
+  section: "40px"
+  rhythm: "4px"
   max: "1440px"
   gutter-mobile: "16px"
   pad-mobile: "16px"
@@ -214,14 +215,17 @@ Ink on cool release-white, one ultramarine fan, graphite peers, brick red held b
 **Character:** A civic, government-release grotesque set with tabular lining figures (`font-variant-numeric: tabular-nums lining-nums` on the root), so every column of numbers aligns. Hierarchy comes from weight (450 to 700, with 650 as the house bold for figures) and small size steps rather than big display contrast.
 
 ### Hierarchy
-- **Display** (700, 30px, 1.1, -0.02em): the institution name in the masthead only; 24px on mobile and on the report sheet.
-- **Figure** (650, 28px, 1.15, -0.02em): headline vital values; stress outcomes step down to 24px, small-multiple current values to 20px.
+Screen sizes come from one role scale on `:root` (`--fs-caption` 11, `--fs-label` 12, `--fs-ui` 13, `--fs-body` 14, `--fs-read` 15, `--fs-lead` 16, `--fs-sub` 18, `--fs-title` 20, `--fs-figure` 24, `--fs-vital` 28, `--fs-mast` 32). No half-pixel sizes; the print sheet keeps its own fixed sizes.
+
+- **Poster display** (720, clamp to 68px, 1.02, -0.035em): the landing headline and the case-study title only (the case study clamps to 58px). Standfirsts under them are 18px ink-2.
+- **Display** (720, 32px, 1.08, -0.028em): the institution name in the masthead; 24px on mobile and on the report sheet.
+- **Figure** (650, 28px, 1.15, -0.02em): headline vital values and case-study facts; stress outcomes and landing specimen figures use 24px, small-multiple current values 20px.
 - **Headline** (650, 18px): section heads in Method prose; notices use 20px.
-- **Title** (700, 15px): exhibit titles, followed by a 450-weight ink-3 qualifier after a middle dot ("Net worth ratio · reported and projected four quarters"). Small multiples use 13.5px.
-- **Body** (400, 14px, 1.45): base text. Analyst-reading clauses sit at 13.5px/1.5 with a 62ch measure; Method prose at 14.5px/1.62, 70ch.
-- **Table** (400, 13px): data tables; column heads 11.5px/700 in ink-2.
+- **Title** (700, 16px): exhibit titles, followed by a 450-weight ink-3 qualifier after a middle dot ("Net worth ratio · reported and projected four quarters"). Small multiples use 14px.
+- **Body** (400, 14px, 1.45): base text. Analyst-reading clauses sit at 14px/1.5 with a 62ch measure; Method prose and plain-terms summaries at 15px.
+- **Table** (400, 13px): data tables; column heads 12px/700 in ink-2.
 - **Label** (600, 12px): vital labels, legend, controls, tabs (13px).
-- **Source** (400, 11.5px, 1.5, ink-3): the source line under each exhibit; axis ticks 11px.
+- **Source** (400, 12px, 1.5, ink-3): the source line under each exhibit; axis ticks 11px.
 - **Stamp** (700, 10.5px, 0.04em, uppercase): state stamps only. Uppercase is reserved for this one role.
 
 ### Named Rules
@@ -231,9 +235,9 @@ Ink on cool release-white, one ultramarine fan, graphite peers, brick red held b
 
 ## Layout
 
-A 1440px max container with 32px side padding and a 12-column grid (24px gutter, 36px row gap, 28px top padding). The lead exhibit spans 8 columns with a 4-column reading beside it; secondary charts run three across at 4 columns; tables span 12. The vitals strip is a five-column ruled row, with vertical hairlines between cells and the first cell flush left.
+A 1440px max container with 32px side padding and a 12-column grid (24px gutter, 40px row gap, 32px top padding). Spacing sits on a 4px rhythm (`--s-1` to `--s-8`: 4, 8, 12, 16, 24, 32, 48, 64); only hairline-scale nudges inside controls fall between. The lead exhibit spans 8 columns with a 4-column reading beside it; secondary charts run three across at 4 columns; tables span 12. The vitals strip is a five-column ruled row, with vertical hairlines between cells and the first cell flush left.
 
-Below 1100px, 4 to 8 column spans collapse to full width, span-3 becomes half, vitals go to three columns, and the stress layout stacks. Below 720px padding and gutter drop to 16px, the top bar wraps with search on its own row, vitals go to two columns, readings stack label over text, wide tables fade out at the right edge with a mask, and the Method table of contents hides.
+Below 1100px, 4 to 8 column spans collapse to full width, span-3 becomes half, vitals go to three columns, and the stress layout stacks. Below 720px padding and gutter drop to 16px, the top bar wraps with search on its own row, vitals go to two columns, readings stack label over text, wide tables fade out at the right edge with a mask, the section tabs scroll sideways on one line with faded edges (44px touch height), masthead facts drop their separators, an odd final vital spans the row, and the Method table of contents hides.
 
 The report is a letter-size sheet (8.5in max, 0.5in by 0.55in padding) that prints at 10px base with all app chrome removed.
 
