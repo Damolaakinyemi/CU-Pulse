@@ -10,6 +10,8 @@ import { SECTIONS, href, useRoute } from './lib/router.js'
 import Accuracy from './views/Accuracy.jsx'
 import CaseStudy from './views/CaseStudy.jsx'
 import Forecast from './views/Forecast.jsx'
+import Glossary from './views/Glossary.jsx'
+import { Guide, PlainSummary } from './components/Plain.jsx'
 import Home from './views/Home.jsx'
 import Method from './views/Method.jsx'
 import Overview from './views/Overview.jsx'
@@ -66,6 +68,15 @@ function Masthead({ inst, section }) {
       </nav>
     </div>
   )
+}
+
+// The one question each tab answers, in plain words, for readers new to this work.
+const SECTION_QUESTION = {
+  trends: 'How has each measure moved over time, and is it better or worse than similar credit unions? The grey band is the middle half of peers.',
+  forecast: 'Where are the balance sheet and capital likely to be in a year, and how accurate has this model been before?',
+  peers: 'How does this credit union compare, one measure at a time, with the 25 closest in size?',
+  stress: 'What if things go wrong? Drag the severity slider to add losses and see whether capital stays above 7%.',
+  method: 'Where every number comes from and how it is calculated.',
 }
 
 function sinceText(iso) {
@@ -177,7 +188,7 @@ export default function App() {
   const fc = useResource(cu && `fc:${cu}`, (s) => api.forecast(cu, s))
 
   useEffect(() => {
-    const titles = { 'case-study': 'Case study: Navy Federal', accuracy: 'Forecast accuracy' }
+    const titles = { 'case-study': 'Case study: Navy Federal', accuracy: 'Forecast accuracy', glossary: 'Glossary' }
     document.title = cu && inst.data ? `${inst.data.name} · CU Pulse` : titles[route.section] ? `${titles[route.section]} · CU Pulse` : 'CU Pulse · Credit union financial health'
   }, [cu, inst.data, route.section])
 
@@ -202,7 +213,7 @@ export default function App() {
   } else if (meta.error) {
     body = <ErrorNotice title="CU Pulse could not reach its data" error={meta.error} onRetry={() => setAttempt((a) => a + 1)} />
   } else if (!cu) {
-    const Page = section === 'case-study' ? CaseStudy : section === 'accuracy' ? Accuracy : Home
+    const Page = section === 'case-study' ? CaseStudy : section === 'accuracy' ? Accuracy : section === 'glossary' ? Glossary : Home
     body = meta.data ? <Page meta={meta.data} /> : <Loading />
   } else if (inst.error) {
     body = inst.error.status === 404
@@ -227,7 +238,14 @@ export default function App() {
     body = (
       <>
         <Masthead inst={inst.data} section={section} />
-        {section === 'overview' && <Vitals inst={inst.data} peers={peers.data} meta={meta.data} />}
+        {section === 'overview' && (
+          <>
+            <Guide cu={cu} />
+            {peers.data && <PlainSummary inst={inst.data} peers={peers.data} fc={fc.data} />}
+            <Vitals inst={inst.data} peers={peers.data} meta={meta.data} />
+          </>
+        )}
+        {SECTION_QUESTION[section] && <p className="tab-question">{SECTION_QUESTION[section]}</p>}
         <main>{view}</main>
       </>
     )
@@ -242,6 +260,7 @@ export default function App() {
           <nav className="bar-nav" aria-label="Pages">
             <a href="#/case-study" aria-current={section === 'case-study' ? 'page' : undefined}>Case study</a>
             <a href="#/accuracy" aria-current={section === 'accuracy' ? 'page' : undefined}>Forecast accuracy</a>
+            <a href="#/glossary" aria-current={section === 'glossary' ? 'page' : undefined}>Glossary</a>
           </nav>
           {meta.data && (
             <div className="bar-meta">

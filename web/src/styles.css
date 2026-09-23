@@ -1043,6 +1043,181 @@ table.data.pin-first tr.featured td:first-child {
   color: var(--fan-ink);
 }
 
+/* Plain-language help for newcomers */
+.term {
+  position: relative;
+  display: inline;
+}
+
+.term-label {
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: help;
+  text-decoration: underline dotted var(--ink-3);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+.term-label:hover,
+.term-label[aria-expanded='true'] {
+  text-decoration-color: var(--fan);
+}
+
+.term-pop {
+  position: absolute;
+  z-index: 40;
+  left: 0;
+  top: calc(100% + 6px);
+  width: min(320px, 80vw);
+  padding: 10px 12px;
+  background: var(--ink);
+  color: var(--bar-ink);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: left;
+  white-space: normal;
+  border-radius: var(--radius);
+  box-shadow: 0 10px 28px -10px rgba(14, 26, 43, 0.5);
+}
+
+.term-pop[hidden] {
+  display: none;
+}
+
+.term-pop b {
+  color: #fff;
+  font-weight: 650;
+}
+
+.term-pop .term-why {
+  display: block;
+  margin-top: 6px;
+  color: var(--bar-ink-2);
+}
+
+.warn-text {
+  color: var(--breach);
+}
+
+.plain {
+  margin-top: 22px;
+  padding: 16px 20px;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-left: 1px solid var(--rule);
+}
+
+.plain h2 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.plain ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.plain li {
+  font-size: 14.5px;
+  line-height: 1.55;
+  max-width: 110ch;
+}
+
+.plain li b {
+  font-weight: 650;
+}
+
+.guide-strip {
+  margin-top: 22px;
+  padding: 16px 20px 18px;
+  background: var(--fan-wash);
+  border: 1px solid rgba(40, 51, 200, 0.25);
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.guide-strip-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
+}
+
+.guide-strip h2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.guide-strip ol {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 5px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  max-width: 110ch;
+}
+
+.guide-close {
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  padding: 2px;
+  line-height: 0;
+}
+
+.guide-close:hover {
+  color: var(--ink);
+}
+
+.tab-question {
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--ink-2);
+  max-width: 100ch;
+}
+
+.glossary {
+  margin: 0;
+}
+
+.glossary > div {
+  display: grid;
+  grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+  gap: 4px 24px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.glossary dt {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.glossary dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  max-width: 64ch;
+}
+
+.glossary .term-why {
+  margin-top: 4px;
+  color: var(--ink-2);
+}
+
 /* Percentile on a rule */
 .pctl {
   margin-top: 10px;
@@ -2005,6 +2180,8 @@ input[type='range']::-moz-range-thumb {
   .outcome:first-child { border-top: 0; }
   .reading-item { grid-template-columns: 1fr; gap: 3px; }
   .toc { display: none; }
+  .glossary > div { grid-template-columns: minmax(0, 1fr); }
+  .plain, .guide-strip { padding: 14px; }
   .sheet { padding: 20px 16px; }
   .sheet-row { grid-template-columns: minmax(0, 1fr); }
   .sheet-head { flex-direction: column; align-items: flex-start; }

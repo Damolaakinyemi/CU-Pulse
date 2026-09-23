@@ -10,7 +10,7 @@ export const SECTIONS = [
 ]
 
 /** Hash routes: #/cu/5536/forecast, #/cu/5536/report */
-export const PAGES = ['case-study', 'accuracy']
+export const PAGES = ['case-study', 'accuracy', 'glossary']
 
 function parse(hash) {
   const page = hash.match(/^#\/([a-z-]+)$/)

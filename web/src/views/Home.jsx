@@ -126,7 +126,8 @@ export default function Home({ meta }) {
                 {i < SUGGESTIONS.length - 1 ? ', ' : ''}
               </span>
             ))}
-            , a state such as <b>VA</b>, or a charter number.
+            , a state such as <b>VA</b>, or a charter number. New to credit union analysis? Start with the{' '}
+            <a href="#/glossary">glossary</a>; every dashboard also opens with a plain-language summary.
           </p>
           <p className="home-builder">
             Built by <b>Damola Akinyemi</b> as a portfolio project for financial forecasting & reporting roles ·{' '}
