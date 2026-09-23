@@ -89,7 +89,8 @@ def main():
     calm = project(base, growth, 0, 0)
     calm_be = breakeven(base, growth, 0)
     severe = project(base, growth + SEVERE["growth"], SEVERE["nco"], SEVERE["roa"])
-    severe_be = breakeven(base, growth + SEVERE["growth"], SEVERE["roa"])
+    # Headroom on top of the severe case's own extra charge-offs.
+    severe_be = breakeven(base, growth + SEVERE["growth"], SEVERE["roa"]) - SEVERE["nco"]
     end_q = assets_path[-1]["quarter"]
 
     loans = fc["series"]["total_loans"]
@@ -157,7 +158,7 @@ def main():
         "Capital rolled forward four quarters: pre-loss earnings less any charge-offs above today's rate, with assets "
         "growing at the model's projected pace. Credit unions pay no income tax, so losses pass straight to net worth.",
         "",
-        f"| Scenario | Net worth ratio at {quarter(end_q)} | Extra charge-offs before 7% |",
+        f"| Scenario | Net worth ratio at {quarter(end_q)} | Further charge-offs before 7% |",
         "|---|---:|---:|",
         f"| Reported, {quarter(now.quarter)} | {pct(now.net_worth_ratio)} | |",
         f"| Earnings retention: no shock, all of today's {pct(now.roa)} ROA kept, assets +{pct(growth, 1)} | {pct(calm)} | +{pct(calm_be, 1)} ({pct(base['nco'] + calm_be, 1)} all-in) |",

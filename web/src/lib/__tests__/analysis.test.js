@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { breakevenNco, fanSeries, projectCapital, reading, scenarioAt, stressBaseline, WELL_CAPITALIZED } from '../analysis.js'
+import { breakevenNco, chargeOffHeadroom, fanSeries, projectCapital, reading, scenarioAt, stressBaseline, WELL_CAPITALIZED } from '../analysis.js'
 
 const base = { assets: 1000, netWorth: 100, loanShare: 0.6, roa: 0.01, nco: 0.005, growth: 0.04, quarter: '2026Q2' }
 
@@ -26,6 +26,18 @@ describe('stress test', () => {
     const x = breakevenNco(base, levers)
     const path = projectCapital(base, { ...levers, nco: base.nco + x })
     expect(path[4].ratio).toBeCloseTo(WELL_CAPITALIZED, 10)
+  })
+
+  it('headroom is measured from the charge-offs already in the scenario', () => {
+    const levers = { growth: 0.04, nco: base.nco + 0.01, roaShift: 0 }
+    const { headroom } = chargeOffHeadroom(base, levers)
+    const path = projectCapital(base, { ...levers, nco: levers.nco + headroom })
+    expect(path[4].ratio).toBeCloseTo(WELL_CAPITALIZED, 10)
+  })
+
+  it('flags when losses alone cannot reach 7% (tiny loan book)', () => {
+    const tiny = { ...base, loanShare: 0.03 }
+    expect(chargeOffHeadroom(tiny, { growth: 0.04, nco: tiny.nco, roaShift: 0 }).lossesCannotBreach).toBe(true)
   })
 
   it('severity 0 is the baseline and 100 is the full severe case', () => {

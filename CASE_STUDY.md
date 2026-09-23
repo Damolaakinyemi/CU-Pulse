@@ -28,11 +28,11 @@ Peers: 25 nearest active credit unions by total assets (log distance), 2026Q2.
 
 Capital rolled forward four quarters: pre-loss earnings less any charge-offs above today's rate, with assets growing at the model's projected pace. Credit unions pay no income tax, so losses pass straight to net worth.
 
-| Scenario | Net worth ratio at Q2 2027 | Extra charge-offs before 7% |
+| Scenario | Net worth ratio at Q2 2027 | Further charge-offs before 7% |
 |---|---:|---:|
 | Reported, Q2 2026 | 11.65% | |
 | Earnings retention: no shock, all of today's 1.41% ROA kept, assets +4.5% | 12.51% | +7.9% (10.3% all-in) |
-| Severe (95th-percentile charge-off rise, 2018–2026): charge-offs +1.2 pts, pre-loss ROA −0.3 pts, assets +6 pts faster | 10.73% | +6.8% |
+| Severe (95th-percentile charge-off rise, 2018–2026): charge-offs +1.2 pts, pre-loss ROA −0.3 pts, assets +6 pts faster | 10.73% | +5.6% |
 | Statistical forecast (ARIMA(1,1,0) with drift) | 11.58% | |
 
 ## What the forecast says, and how far to trust it

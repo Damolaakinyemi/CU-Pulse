@@ -44,7 +44,7 @@ export default function CaseStudy({ meta }) {
   const calmEnd = projectCapital(base, calm).at(-1)
   const severeEnd = projectCapital(base, severe).at(-1)
   const calmBreak = breakevenNco(base, calm)
-  const severeBreak = breakevenNco(base, severe)
+  const severeBreak = breakevenNco(base, severe) - (severe.nco - base.nco)
   const cushion = (now.net_worth_ratio - WELL_CAPITALIZED) * now.total_assets
   // Reconcile the earnings-retention case with the statistical forecast from the history itself.
   const first = i.quarters.find((r) => isNum(r.total_assets))
@@ -184,12 +184,12 @@ export default function CaseStudy({ meta }) {
           id="cs-stress"
           title="Stress outcomes"
           sub={`net worth ratio at ${quarter(calmEnd.quarter)}`}
-          source={`From the reported ratio for ${quarter(base.quarter)}. Breakeven is the extra annualized charge-off rate that leaves the ratio at exactly 7% after four quarters.`}
+          source={`From the reported ratio for ${quarter(base.quarter)}. Headroom is the further annualized charge-off rate, on top of each scenario's own, that leaves the ratio at exactly 7% after four quarters.`}
         >
           <div className="table-wrap">
             <table className="data">
               <thead>
-                <tr><th scope="col">Scenario</th><th scope="col">Ratio</th><th scope="col">Charge-off breakeven</th></tr>
+                <tr><th scope="col">Scenario</th><th scope="col">Ratio</th><th scope="col">Charge-off headroom</th></tr>
               </thead>
               <tbody>
                 <tr><th scope="row" style={{ fontWeight: 600 }}>Reported today</th><td>{pct(now.net_worth_ratio)}</td><td className="muted">—</td></tr>

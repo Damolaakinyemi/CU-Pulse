@@ -31,8 +31,11 @@ export function useRoute() {
   useEffect(() => {
     const onHash = () => {
       const next = parse(window.location.hash)
-      if (document.startViewTransition && !prefersReducedMotion()) {
-        document.startViewTransition(() => flushSync(() => setRoute(next)))
+      if (document.startViewTransition && !prefersReducedMotion() && !document.hidden) {
+        const t = document.startViewTransition(() => flushSync(() => setRoute(next)))
+        // An aborted transition (tab hidden, rapid navigation) still applied the route; ignore it.
+        t.ready.catch(() => {})
+        t.finished.catch(() => {})
       } else {
         setRoute(next)
       }

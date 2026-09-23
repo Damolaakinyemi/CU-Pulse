@@ -2,8 +2,8 @@ import { Check, Link as LinkIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Exhibit, Stamp } from '../components/Chrome.jsx'
 import { StressChart } from '../components/Charts.jsx'
-import { LEVER_LIMITS, SEVERE, WELL_CAPITALIZED, breakevenNco, projectCapital, scenarioAt, stressBaseline } from '../lib/analysis.js'
-import { bp, isNum, pct, quarter, usd } from '../lib/format.js'
+import { LEVER_LIMITS, SEVERE, WELL_CAPITALIZED, chargeOffHeadroom, lowConfidence, projectCapital, scenarioAt, stressBaseline } from '../lib/analysis.js'
+import { bp, pct, quarter, usd } from '../lib/format.js'
 import { extent } from '../lib/chartmath.js'
 import { useTween } from '../lib/motion.js'
 import { useHashParam } from '../lib/router.js'
@@ -49,10 +49,11 @@ export default function Stress({ inst, fc }) {
   const levers = override ?? scenarioAt(base, severity)
   const path = projectCapital(base, levers)
   const end = path[path.length - 1]
-  const breakeven = breakevenNco(base, levers)
+  const room = chargeOffHeadroom(base, levers)
   const firstBreach = path.find((p, i) => i > 0 && p.ratio < WELL_CAPITALIZED)
   const cushion = end.netWorth - WELL_CAPITALIZED * end.assets
-  const nwFc = fc?.series?.net_worth_ratio
+  // A volatile history gives the model a meaningless spread; don't lend it to the scenario.
+  const nwFc = lowConfidence(fc?.series?.net_worth_ratio, 'net_worth_ratio') ? null : fc?.series?.net_worth_ratio
 
   // The scenario carries the statistical model's own uncertainty: its 50/80% half-widths
   // at each horizon are laid around the scenario path, so the fan moves with the levers.
@@ -87,7 +88,7 @@ export default function Stress({ inst, fc }) {
   // Outcomes glide to their new values, so each change reads as a consequence.
   const shownRatio = useTween(end.ratio)
   const shownCushion = useTween(cushion)
-  const shownBreakeven = useTween(Math.max(breakeven, 0))
+  const shownHeadroom = useTween(Math.max(room.headroom, 0))
   const [copied, setCopied] = useState(false)
   const copyLink = () => {
     navigator.clipboard?.writeText(window.location.href).then(
@@ -205,7 +206,7 @@ export default function Stress({ inst, fc }) {
             {firstBreach ? <Stamp kind="breach">Below 7% in {quarter(firstBreach.quarter)}</Stamp> : <Stamp kind="projected">Stays well capitalized</Stamp>}
           </span>
         }
-        source="Scenario path: quarterly net worth rolls forward by pre-loss earnings less incremental charge-offs on a loan book held at today's share of assets; assets compound at the chosen growth rate. The shaded fan around it is the statistical model's own 50% and 80% spread at each horizon. Dashed line: the model's baseline projection."
+        source={`Scenario path: quarterly net worth rolls forward by pre-loss earnings less incremental charge-offs on a loan book held at today's share of assets; assets compound at the chosen growth rate. ${nwFc ? "The shaded fan around it is the statistical model's own 50% and 80% spread at each horizon. Dashed line: the model's baseline projection." : "No statistical band is drawn: this credit union's history is too volatile for the forecast model."} Headroom is measured from the charge-off rate already in the scenario.`}
       >
         <div className="outcomes">
           <div className="outcome">
@@ -219,20 +220,30 @@ export default function Stress({ inst, fc }) {
             <span className="d">net worth above the well-capitalized line</span>
           </div>
           <div className="outcome">
-            <span className="k">Charge-off breakeven</span>
-            <span className="v">{isNum(breakeven) ? `+${pct(shownBreakeven)}` : '—'}</span>
-            <span className="d">
-              {breakeven > 0
-                ? `extra annualized charge-offs before 7%, ${pct(base.nco + breakeven)} all-in`
-                : 'already below 7% before any extra losses'}
-            </span>
+            <span className="k">Charge-off headroom</span>
+            {room.lossesCannotBreach ? (
+              <>
+                <span className="v">Not reachable</span>
+                <span className="d">loans are {pct(base.loanShare, 1)} of assets: even writing off every loan would not take capital below 7%</span>
+              </>
+            ) : room.headroom > 0 ? (
+              <>
+                <span className="v">+{(shownHeadroom * 100).toFixed(2)} pts</span>
+                <span className="d">more annual charge-offs before 7% ({pct(room.allIn)} all-in)</span>
+              </>
+            ) : (
+              <>
+                <span className="v breach">None</span>
+                <span className="d">this scenario already ends below 7%</span>
+              </>
+            )}
           </div>
         </div>
         <StressChart rows={rows} bounds={bounds} breach={breached} />
         <div className="legend" style={{ marginTop: 8 }}>
           <span><i className="swatch line" /> Scenario</span>
-          <span><i className="swatch dash" /> Model baseline</span>
-          <span><i className="swatch fan" /> Scenario 50 · 80% ranges</span>
+          {nwFc && <span><i className="swatch dash" /> Model baseline</span>}
+          {nwFc && <span><i className="swatch fan" /> Scenario 50 · 80% ranges</span>}
           <span><i className="swatch hatch" /> Below well capitalized</span>
         </div>
       </Exhibit>

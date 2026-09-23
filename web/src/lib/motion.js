@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 
+/** Skip motion when the user asked for less, or when the page is hidden (browsers pause frames there). */
+function skipMotion() {
+  return prefersReducedMotion() || document.hidden
+}
+
 export function prefersReducedMotion() {
   try {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -20,10 +25,10 @@ export function useTween(target, duration = 240) {
   const frame = useRef(0)
 
   useEffect(() => {
-    if (!Number.isFinite(target) || prefersReducedMotion()) {
+    if (!Number.isFinite(target) || skipMotion()) {
       from.current = target
-      frame.current = requestAnimationFrame(() => setShown(target))
-      return () => cancelAnimationFrame(frame.current)
+      const t = setTimeout(() => setShown(target), 0)
+      return () => clearTimeout(t)
     }
     const start = performance.now()
     const origin = Number.isFinite(from.current) ? from.current : target
@@ -35,7 +40,16 @@ export function useTween(target, duration = 240) {
       if (t < 1) frame.current = requestAnimationFrame(step)
     }
     frame.current = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(frame.current)
+    // If frames stop (tab hidden mid-glide), still land exactly on the value.
+    const settle = setTimeout(() => {
+      cancelAnimationFrame(frame.current)
+      from.current = target
+      setShown(target)
+    }, duration + 80)
+    return () => {
+      cancelAnimationFrame(frame.current)
+      clearTimeout(settle)
+    }
   }, [target, duration])
 
   return shown
@@ -56,10 +70,10 @@ export function useTweenRows(input, duration = 240) {
     const rows = JSON.parse(sig)
     const from = prev.current
     const same = from.length === rows.length && from.every((r, i) => r.quarter === rows[i].quarter)
-    if (!same || prefersReducedMotion()) {
+    if (!same || skipMotion()) {
       prev.current = rows
-      frame.current = requestAnimationFrame(() => setShown(rows))
-      return () => cancelAnimationFrame(frame.current)
+      const t = setTimeout(() => setShown(rows), 0)
+      return () => clearTimeout(t)
     }
     const mix = (a, b, t) => {
       if (Array.isArray(b)) return Array.isArray(a) ? b.map((v, k) => mix(a[k], v, t)) : b
@@ -79,7 +93,15 @@ export function useTweenRows(input, duration = 240) {
       else prev.current = rows
     }
     frame.current = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(frame.current)
+    const settle = setTimeout(() => {
+      cancelAnimationFrame(frame.current)
+      prev.current = rows
+      setShown(rows)
+    }, duration + 80)
+    return () => {
+      cancelAnimationFrame(frame.current)
+      clearTimeout(settle)
+    }
   }, [sig, duration])
 
   return shown

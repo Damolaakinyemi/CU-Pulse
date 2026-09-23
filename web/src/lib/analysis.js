@@ -245,6 +245,19 @@ export function breakevenNco(base, { growth, roaShift }) {
   return x
 }
 
+/**
+ * How much more charge-off the scenario could take before the ratio ends at 7%.
+ * Measured from the charge-off rate already in the scenario, not from the reported one.
+ * `allIn` is the total annual rate at that point; above 100% of loans the question has
+ * no real answer (the loan book is too small relative to capital to breach 7 % by losses alone).
+ */
+export function chargeOffHeadroom(base, levers) {
+  const total = breakevenNco(base, levers)
+  const used = levers.nco - base.nco
+  const allIn = base.nco + total
+  return { headroom: total - used, allIn, lossesCannotBreach: allIn >= 1 }
+}
+
 export function scenarioAt(base, severity) {
   const s = severity / 100
   return {
