@@ -98,6 +98,15 @@ def main():
     chosen = loans["backtest"][loans["model"]]
     bt = json.loads(BACKTEST.read_text()) if BACKTEST.exists() else None
 
+    # Reconcile the earnings-retention case with the statistical forecast from the history itself.
+    years = (len(rows) - 1) / 4
+    hist_growth = (now.total_assets / rows.total_assets.iloc[0]) ** (1 / years) - 1
+    hist_roa = rows[rows.quarter.str.endswith("Q4")].roa.mean()
+    nwr_avg = rows.net_worth_ratio.mean()
+    capital_growth = hist_roa / nwr_avg
+    pace = ("earnings roughly kept pace with growth" if abs(capital_growth - hist_growth) < 0.02 else
+            "earnings outpaced growth" if capital_growth > hist_growth else "growth outpaced earnings")
+
     high_loss = now.net_charge_off_rate > nco["median"] * 1.5
     strong = roa["percentile"] >= 50
     title = ("Navy Federal: losses run high, and earnings carry them" if high_loss and strong else
@@ -151,8 +160,9 @@ def main():
         f"| Scenario | Net worth ratio at {quarter(end_q)} | Extra charge-offs before 7% |",
         "|---|---:|---:|",
         f"| Reported, {quarter(now.quarter)} | {pct(now.net_worth_ratio)} | |",
-        f"| No further shock | {pct(calm)} | +{pct(calm_be, 1)} ({pct(base['nco'] + calm_be, 1)} all-in) |",
+        f"| Earnings retention: no shock, all of today's {pct(now.roa)} ROA kept, assets +{pct(growth, 1)} | {pct(calm)} | +{pct(calm_be, 1)} ({pct(base['nco'] + calm_be, 1)} all-in) |",
         f"| Severe: charge-offs +2.5 pts, pre-loss ROA −0.5 pts, assets +6 pts faster | {pct(severe)} | +{pct(severe_be, 1)} |",
+        f"| Statistical forecast ({fc['series']['net_worth_ratio']['model_label']}) | {pct(nw_end['point'])} | |",
         "",
         "## What the forecast says, and how far to trust it",
         "",
@@ -161,6 +171,13 @@ def main():
         f"Federal's own backtest the selected loans model ({loans['model_label']}) had {pct(chosen['error'], 1)} mean "
         f"absolute percentage error, and its 80% ranges held {pct(chosen['coverage80'], 0)} of outcomes: useful for "
         f"direction, too confident on range.",
+        "",
+        f"**Why the forecast ({pct(nw_end['point'])}) sits below the earnings-retention case ({pct(calm)}).** They answer "
+        f"different questions. The retention case applies today's {pct(now.roa)} ROA to assets growing {pct(growth, 1)} a "
+        f"year. The forecast extrapolates the ratio's own history, in which assets grew about {pct(hist_growth, 1)} a year "
+        f"against an average year-end ROA of {pct(hist_roa)}; {pace}, and the ratio stayed between "
+        f"{pct(rows.net_worth_ratio.min())} and {pct(rows.net_worth_ratio.max())}. Dividends on shares are already an "
+        f"expense before net income, so they are not the gap.",
     ]
     if bt and bt["overall"].get("total_loans"):
         b = bt["overall"]["total_loans"]

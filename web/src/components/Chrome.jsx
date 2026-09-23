@@ -1,5 +1,5 @@
 import { AlertTriangle, RotateCw } from 'lucide-react'
-import { isNum } from '../lib/format.js'
+import { isNum, ordinal } from '../lib/format.js'
 
 export function Exhibit({ title, sub, tools, source, className = '', children, id }) {
   return (
@@ -34,7 +34,7 @@ export function Segmented({ label, options, value, onChange }) {
 }
 
 /** Peer position on a rule: IQR box, median tick, institution mark. */
-export function PercentileRule({ value, peer, better }) {
+export function PercentileRule({ value, peer, better, compact = false }) {
   if (!peer || !isNum(value) || !isNum(peer.p25)) {
     return <div className="pctl pctl-caption">Peer comparison not available</div>
   }
@@ -48,18 +48,29 @@ export function PercentileRule({ value, peer, better }) {
   const x = (v) => `${((v - lo) / (hi - lo)) * 100}%`
   const pctl = peer.percentile
   return (
-    <div className="pctl" aria-label={`${Math.round(pctl)}th percentile of peers`}>
+    <div
+      className="pctl"
+      role="img"
+      aria-label={`${isNum(pctl) ? `${ordinal(pctl)} percentile of peers` : 'Percentile not available'}${better ? `; ${better} is stronger` : ''}; peer median ${peer.median != null ? (peer.median * 100).toFixed(2) + '%' : 'not available'}`}
+    >
       <div className="pctl-track" aria-hidden="true">
         <div className="pctl-iqr" style={{ left: x(peer.p25), width: `calc(${x(peer.p75)} - ${x(peer.p25)})` }} />
         <div className="pctl-median" style={{ left: x(peer.median) }} />
         <div className="pctl-mark" style={{ left: x(value) }} />
       </div>
-      <div className="pctl-caption">
-        <span>
-          {isNum(pctl) ? `${Math.round(pctl)}th pctl of peers` : 'Percentile n/a'}
-        </span>
-        <span>{better === 'higher' ? 'higher is stronger' : better === 'lower' ? 'lower is stronger' : 'peer middle 50%'}</span>
-      </div>
+      {compact ? (
+        <div className="pctl-caption" aria-hidden="true">
+          <span>
+            {isNum(pctl) ? `${ordinal(pctl)} pctl` : 'n/a'}
+            {better ? ` · ${better} is stronger` : ''}
+          </span>
+        </div>
+      ) : (
+        <div className="pctl-caption" aria-hidden="true">
+          <span>{isNum(pctl) ? `${ordinal(pctl)} pctl of peers` : 'Percentile n/a'}</span>
+          <span>{better === 'higher' ? 'higher is stronger' : better === 'lower' ? 'lower is stronger' : 'peer middle 50%'}</span>
+        </div>
+      )}
     </div>
   )
 }

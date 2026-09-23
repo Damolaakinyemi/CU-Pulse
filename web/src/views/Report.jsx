@@ -71,7 +71,7 @@ export default function Report({ inst, peers, fc, meta }) {
           <section>
             <h2>Net worth ratio, reported and projected</h2>
             {fc ? (
-              <FanChart rows={nwRows} format={fmt.pct} zones compact height={210} reveal={false} label="Net worth ratio" />
+              <FanChart rows={nwRows} format={fmt.pct} zones height={210} reveal={false} label="Net worth ratio" />
             ) : (
               <Skeleton height={210} />
             )}

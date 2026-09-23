@@ -7,12 +7,21 @@ async function get(path, params, signal) {
     res = await fetch(`/api${path}${query}`, { signal })
   } catch (e) {
     if (e.name === 'AbortError') throw e
-    const error = new Error('The CU Pulse API is not reachable. Start it with: cd api && .venv/bin/uvicorn app.main:app')
+    const error = new Error(
+      import.meta.env.DEV
+        ? 'The CU Pulse API is not reachable. Start it with: cd api && .venv/bin/uvicorn app.main:app'
+        : 'CU Pulse’s data service is not answering yet. On free hosting it sleeps when idle and takes about 30 seconds to wake.',
+    )
     error.status = 0
     throw error
   }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}))
+    if (res.status >= 502 && !body.detail) {
+      const error = new Error('CU Pulse’s data service is starting up. This usually takes under a minute.')
+      error.status = res.status
+      throw error
+    }
     const error = new Error(body.detail || `The API returned an error (${res.status}).`)
     error.status = res.status
     throw error

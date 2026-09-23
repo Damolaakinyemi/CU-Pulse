@@ -45,6 +45,21 @@ export default function CaseStudy({ meta }) {
   const calmBreak = breakevenNco(base, calm)
   const severeBreak = breakevenNco(base, severe)
   const cushion = (now.net_worth_ratio - WELL_CAPITALIZED) * now.total_assets
+  // Reconcile the earnings-retention case with the statistical forecast from the history itself.
+  const first = i.quarters.find((r) => isNum(r.total_assets))
+  const yearsSpan = (i.quarters.indexOf(now) - i.quarters.indexOf(first)) / 4
+  const histGrowth = yearsSpan > 0 ? (now.total_assets / first.total_assets) ** (1 / yearsSpan) - 1 : null
+  const annualRoa = i.quarters.filter((r) => r.quarter.endsWith('Q4') && isNum(r.roa)).map((r) => r.roa)
+  const histRoa = annualRoa.length ? annualRoa.reduce((x, y) => x + y, 0) / annualRoa.length : null
+  const nwrHist = i.quarters.map((r) => r.net_worth_ratio).filter(isNum)
+  const nwrLo = Math.min(...nwrHist)
+  const nwrHi = Math.max(...nwrHist)
+  // Net worth grows at ROA ÷ ratio when all earnings are retained; compare with asset growth.
+  const nwrAvg = nwrHist.reduce((x, y) => x + y, 0) / nwrHist.length
+  const capitalGrowth = isNum(histRoa) ? histRoa / nwrAvg : null
+  const pace = !isNum(capitalGrowth) || !isNum(histGrowth) ? null
+    : Math.abs(capitalGrowth - histGrowth) < 0.02 ? 'earnings roughly kept pace with growth'
+    : capitalGrowth > histGrowth ? 'earnings outpaced growth' : 'growth outpaced earnings'
   const industryShare = now.total_assets / meta.industry_assets
 
   const loans = f.series.total_loans
@@ -70,7 +85,8 @@ export default function CaseStudy({ meta }) {
           publishes a new quarter.
         </p>
         <p className="byline">
-          Built with CU Pulse · <a href={href(CU)}>Open the Navy Federal dashboard</a>
+          By Damola Akinyemi, built with CU Pulse · <a href={href(CU)}>Open the Navy Federal dashboard</a> ·{' '}
+          <a href="https://github.com/Damolaakinyemi/CU-Pulse" target="_blank" rel="noreferrer">Source on GitHub</a>
         </p>
       </header>
 
@@ -149,7 +165,8 @@ export default function CaseStudy({ meta }) {
 
           <h2>How much loss it could absorb</h2>
           <p>
-            CU Pulse’s stress test rolls capital forward four quarters. With no shock beyond today’s rates, the ratio reaches{' '}
+            CU Pulse’s stress test rolls capital forward four quarters. In the earnings-retention case (no shock, all of
+            today’s {pct(now.roa)} ROA kept as net worth, assets growing {pct(base.growth, 1)}), the ratio reaches{' '}
             <b>{pct(calmEnd.ratio)}</b> by {quarter(calmEnd.quarter)}, and Navy Federal could absorb a further{' '}
             <b>{pct(calmBreak, 1)}</b> of annualized charge-offs, {pct(base.nco + calmBreak, 1)} all-in, before falling to 7%.
           </p>
@@ -174,7 +191,8 @@ export default function CaseStudy({ meta }) {
               </thead>
               <tbody>
                 <tr><th scope="row" style={{ fontWeight: 600 }}>Reported today</th><td>{pct(now.net_worth_ratio)}</td><td className="muted">—</td></tr>
-                <tr><th scope="row" style={{ fontWeight: 600 }}>No further shock</th><td>{pct(calmEnd.ratio)}</td><td>+{pct(calmBreak, 1)}</td></tr>
+                <tr><th scope="row" style={{ fontWeight: 600 }}>Earnings retention</th><td>{pct(calmEnd.ratio)}</td><td>+{pct(calmBreak, 1)}</td></tr>
+                {nwFc && <tr><th scope="row" style={{ fontWeight: 600 }}>Statistical forecast</th><td className="proj">{pct(nwFc.path.at(-1).point)}</td><td className="muted">—</td></tr>}
                 <tr><th scope="row" style={{ fontWeight: 600 }}>Severe</th><td>{pct(severeEnd.ratio)}</td><td>+{pct(severeBreak, 1)}</td></tr>
               </tbody>
             </table>
@@ -202,6 +220,17 @@ export default function CaseStudy({ meta }) {
             <p>
               Loans are projected at {usd(loansEnd.point)} by {quarter(loansEnd.quarter)} (80% range {usd(loansEnd.lo80)}–
               {usd(loansEnd.hi80)}); the net worth ratio at {pct(nwFc?.path.at(-1).point)}.
+            </p>
+          )}
+          {nwFc && (
+            <p>
+              <b>Why this differs from the {pct(calmEnd.ratio)} earnings-retention case.</b> The two answer different questions.
+              The retention case applies today’s {pct(now.roa)} ROA to assets growing {pct(base.growth, 1)} a year. The
+              statistical forecast extrapolates the ratio’s own history instead
+              {isNum(histGrowth) && isNum(histRoa)
+                ? `, in which assets grew about ${pct(histGrowth, 1)} a year against an average year-end ROA of ${pct(histRoa, 2)}; ${pace}, and the ratio stayed between ${pct(nwrLo)} and ${pct(nwrHi)}`
+                : ''}
+              . Dividends on shares are already an expense before net income, so they are not the gap.
             </p>
           )}
           {loans && (

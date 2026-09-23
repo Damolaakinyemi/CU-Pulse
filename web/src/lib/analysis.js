@@ -57,6 +57,19 @@ export function standing(p) {
   return `${ordinal(p.percentile)} percentile`
 }
 
+/**
+ * A projection too wide to act on: an 80% range wider than 4 points of net worth
+ * ratio, or wider than 25% of the level for a balance.
+ */
+export function lowConfidence(series, key) {
+  const path = series?.path
+  if (!path?.length) return false
+  const wide = path.some((p) => (key === 'net_worth_ratio' ? p.hi80 - p.lo80 > 0.04 : p.lo80 > 0 && p.hi80 / p.lo80 - 1 > 0.25))
+  if (wide || key === 'net_worth_ratio') return wide
+  // A balance projection that swings by more than 25% between quarters is not a forecast anyone should plan on.
+  return path.some((p, i) => i > 0 && Math.abs(p.point / path[i - 1].point - 1) > 0.25)
+}
+
 /** A computed analyst reading: every clause is derived from the data shown. */
 export function reading(inst, peers, fc) {
   const now = latest(inst)
@@ -84,8 +97,12 @@ export function reading(inst, peers, fc) {
       k: 'Balance sheet',
       parts: [
         'Loans ', { b: pct(now.loan_growth_yoy, 1) }, ' and shares & deposits ', { b: pct(now.deposit_growth_yoy, 1) }, ' year over year',
-        isNum(gap) ? (gap < 0 ? '; funding is outpacing lending' : '; lending is outpacing funding') : '',
-        isNum(now.loan_to_share) ? `, loan-to-share at ${pct(now.loan_to_share, 1)}.` : '.',
+        isNum(now.loan_to_share) && now.loan_to_share < 0.2
+          ? `; loans are a small part of this balance sheet (loan-to-share ${pct(now.loan_to_share, 1)}).`
+          : [
+              isNum(gap) ? (gap < 0 ? '; funding is outpacing lending' : '; lending is outpacing funding') : '',
+              isNum(now.loan_to_share) ? `, loan-to-share at ${pct(now.loan_to_share, 1)}.` : '.',
+            ].join(''),
       ],
     })
   }
@@ -114,7 +131,19 @@ export function reading(inst, peers, fc) {
 
   const a = fc?.series?.total_assets
   const n = fc?.series?.net_worth_ratio
-  if (a || n) {
+  const volatile = (n && lowConfidence(n, 'net_worth_ratio')) || (a && lowConfidence(a, 'total_assets'))
+  if (volatile) {
+    const s = n && lowConfidence(n, 'net_worth_ratio') ? n : a
+    const e = s.path[s.path.length - 1]
+    const f = s === n ? (v) => pct(v) : (v) => usd(v)
+    items.push({
+      k: 'Outlook',
+      parts: [
+        { b: 'Too volatile to project usefully.' },
+        ` The 80% range for ${s === n ? 'the net worth ratio' : 'total assets'} at ${quarter(e.quarter)} spans ${f(e.lo80)} to ${f(e.hi80)}; read the history, not the projection.`,
+      ],
+    })
+  } else if (a || n) {
     const end = (s) => s.path[s.path.length - 1]
     const parts = []
     if (a) parts.push('Total assets projected at ', { p: usd(end(a).point) }, ` by ${quarter(end(a).quarter)} (80%: ${usd(end(a).lo80)}–${usd(end(a).hi80)})`)
@@ -124,7 +153,12 @@ export function reading(inst, peers, fc) {
   }
 
   const l = fc?.series?.total_loans
-  if (l) {
+  if (l && volatile) {
+    items.push({
+      k: 'Model check',
+      parts: [`On a history this volatile, backtest scores from ${fc.origins} origins say little about the next four quarters, so CU Pulse does not quote them here. They are on the Forecast tab.`],
+    })
+  } else if (l) {
     const chosen = l.backtest[l.model]
     const skill = l.skill_vs_drift != null
       ? ['with ', { b: `${Math.round(l.skill_vs_drift * 100)}% lower error` }, ' than the drift benchmark']

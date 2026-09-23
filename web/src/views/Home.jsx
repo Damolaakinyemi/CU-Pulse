@@ -82,12 +82,12 @@ function Specimen({ cu, meta }) {
           <div key={k}>
             <span className="k">{label}</span>
             <span className="v">{pct(now[k])}</span>
-            <PercentileRule value={now[k]} peer={latestPeer(peers.data, k)} better={meta.definitions[k]?.better} />
+            <PercentileRule value={now[k]} peer={latestPeer(peers.data, k)} better={meta.definitions[k]?.better} compact />
           </div>
         ))}
       </div>
       <div className="specimen-chart">
-        <FanChart rows={rows} format={fmt.pct} zones compact height={170} label="Net worth ratio" />
+        <FanChart rows={rows} format={fmt.pct} zones height={170} label="Net worth ratio" />
         <FanLegend zones rows={rows} />
       </div>
       <span className="specimen-cta">
@@ -127,6 +127,10 @@ export default function Home({ meta }) {
               </span>
             ))}
             , a state such as <b>VA</b>, or a charter number.
+          </p>
+          <p className="home-builder">
+            Built by <b>Damola Akinyemi</b> as a portfolio project for financial forecasting & reporting roles ·{' '}
+            <a href="https://github.com/Damolaakinyemi/CU-Pulse" target="_blank" rel="noreferrer">GitHub</a>
           </p>
         </div>
 

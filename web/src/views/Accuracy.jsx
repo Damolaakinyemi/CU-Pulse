@@ -5,6 +5,7 @@ import { count, pct, quarter } from '../lib/format.js'
 
 const ORDER = ['total_assets', 'total_loans', 'total_shares_deposits', 'net_worth_ratio']
 
+// Within ±5 points of the nominal 80% counts as calibrated.
 function calibration(c) {
   if (c == null) return '—'
   const gap = c - 0.8
@@ -22,7 +23,7 @@ export function SummaryTable({ data, rows = ORDER, compact = false }) {
             <th scope="col">Median error</th>
             <th scope="col">Drift benchmark</th>
             <th scope="col">Error reduction</th>
-            <th scope="col">Beats benchmark</th>
+            {!compact && <th scope="col">Beats benchmark</th>}
             <th scope="col">80% range held</th>
             {!compact && <th scope="col" className="acct">Calibration</th>}
           </tr>
@@ -39,7 +40,7 @@ export function SummaryTable({ data, rows = ORDER, compact = false }) {
                 <td className="proj">{e(s.median_error)}</td>
                 <td>{e(s.median_drift_error)}</td>
                 <td><b>{pct(s.skill_vs_drift, 0)}</b></td>
-                <td>{pct(s.beats_drift_share, 0)}</td>
+                {!compact && <td>{pct(s.beats_drift_share, 0)}</td>}
                 <td>{pct(s.coverage80_mean, 0)}</td>
                 {!compact && <td className="acct"><Stamp kind="reported">{calibration(s.coverage80_mean)}</Stamp></td>}
               </tr>
@@ -74,7 +75,7 @@ export default function Accuracy() {
           id="acc-overall"
           title="Out-of-sample accuracy"
           sub="all credit unions"
-          source={`${d.method} Error is MAPE for balances and mean absolute error in ratio points for the net worth ratio. Error reduction compares medians across credit unions.`}
+          source={`${d.method} Error is MAPE for balances and mean absolute error in ratio points for the net worth ratio. Error reduction compares medians across credit unions. Calibration: within ±5 points of the nominal 80% counts as calibrated.`}
         >
           <SummaryTable data={d} />
         </Exhibit>

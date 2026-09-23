@@ -12,14 +12,14 @@ function Lever({ id, label, value, min, max, step, onChange, format, note }) {
         <label htmlFor={id}>{label}</label>
         <output htmlFor={id}>{format(value)}</output>
       </div>
-      <input id={id} type="range" min={min} max={max} step={step} value={value} style={{ '--fill': fill }} onChange={(e) => onChange(Number(e.target.value))} />
+      <input id={id} type="range" min={min} max={max} step={step} value={value} aria-valuetext={format(value)} style={{ '--fill': fill }} onChange={(e) => onChange(Number(e.target.value))} />
       {note && <p className="lever-note">{note}</p>}
     </div>
   )
 }
 
 const PRESETS = [
-  { label: 'Baseline', severity: 0 },
+  { label: 'Earnings retention', severity: 0 },
   { label: 'Moderate', severity: 40 },
   { label: 'Severe', severity: 100 },
 ]
@@ -67,7 +67,7 @@ export default function Stress({ inst, fc }) {
         id="stress-controls"
         title="Scenario"
         sub={`from ${quarter(base.quarter)}`}
-        source={`Severity scales three levers together, linearly, up to: net charge-offs +${(SEVERE.nco * 100).toFixed(1)} pts, pre-loss ROA ${(SEVERE.roa * 100).toFixed(2)} pts, asset growth +${(SEVERE.growth * 100).toFixed(0)} pts (a deposit inflow that dilutes capital). Fine-tune any lever to break the link. Illustrative capital arithmetic, not NCUA stress-testing methodology.`}
+        source={`Severity scales three levers together, linearly, up to: net charge-offs +${(SEVERE.nco * 100).toFixed(1)} pts, pre-loss ROA ${(SEVERE.roa * 100).toFixed(2)} pts, asset growth +${(SEVERE.growth * 100).toFixed(0)} pts (a deposit inflow that dilutes capital). Fine-tune any lever to break the link. At severity 0 (earnings retention) all of today's ROA is kept as net worth, while the dashed model baseline extrapolates the ratio's own history, so the two can differ. Illustrative capital arithmetic, not NCUA stress-testing methodology.`}
       >
         <div className="severity">
           <div className="lever-head">
@@ -81,6 +81,7 @@ export default function Stress({ inst, fc }) {
             max={100}
             step={1}
             value={severity}
+            aria-valuetext={override ? 'Custom levers' : `${severity} out of 100`}
             style={{ '--fill': `${severity}%` }}
             onChange={(e) => {
               setSeverity(Number(e.target.value))

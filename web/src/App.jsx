@@ -93,9 +93,52 @@ function useNewQuarter(loadedQuarter) {
   return status && status.quarter !== loadedQuarter ? status : null
 }
 
+function SlowNote() {
+  const [slow, setSlow] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setSlow(true), 4000)
+    return () => clearTimeout(t)
+  }, [])
+  return (
+    <p className="inline-note" role="status" style={{ marginTop: 24 }}>
+      {slow
+        ? 'Still loading. If CU Pulse has been idle, its free server takes about 30 seconds to wake; this page will fill in on its own.'
+        : 'Loading the Call Report filings…'}
+    </p>
+  )
+}
+
+function Waking({ error, attempt }) {
+  return (
+    <div className="notice" role="status">
+      <h2>Waking up the data service</h2>
+      <p>{error.message}</p>
+      <p className="muted">Trying again automatically (attempt {attempt + 1}).</p>
+    </div>
+  )
+}
+
+function NotFound({ cu }) {
+  return (
+    <div className="notice not-found">
+      <h2>No credit union with charter {cu}</h2>
+      <p>
+        That charter number does not appear in NCUA’s Call Report data from 2018 on. Search by name, city, state or another
+        charter number instead.
+      </p>
+      <Search variant="hero" section="overview" shortcut={false} />
+      <p className="home-try">
+        Or open <a href={href(5536)}>Navy Federal</a>, <a href={href(227)}>Pentagon (PenFed)</a> or{' '}
+        <a href="#/">the home page</a>.
+      </p>
+    </div>
+  )
+}
+
 function Loading() {
   return (
     <div aria-busy="true" aria-label="Loading credit union">
+      <SlowNote />
       <div className="masthead">
         <div>
           <Skeleton height={32} width={420} />
@@ -113,7 +156,21 @@ function Loading() {
 
 export default function App() {
   const route = useRoute()
-  const meta = useResource('meta', (s) => api.meta(s))
+  const [attempt, setAttempt] = useState(0)
+  const meta = useResource(`meta#${attempt}`, (s) => api.meta(s))
+  // While a sleeping server wakes, keep the waking notice up between retries instead of flashing a skeleton.
+  const [lastError, setLastError] = useState(null)
+  const failing = Boolean(meta.error) && (meta.error.status === 0 || meta.error.status >= 500)
+  const waking = attempt < 20 && (failing || (meta.loading && lastError != null))
+
+  useEffect(() => {
+    if (!failing || attempt >= 20) return undefined
+    const t = setTimeout(() => {
+      setLastError(meta.error)
+      setAttempt((a) => a + 1)
+    }, 5000)
+    return () => clearTimeout(t)
+  }, [failing, attempt, meta.error])
   const cu = route.cu
   const inst = useResource(cu && `inst:${cu}`, (s) => api.institution(cu, s))
   const peers = useResource(cu && `peers:${cu}`, (s) => api.peers(cu, s))
@@ -140,13 +197,17 @@ export default function App() {
   const shared = { inst: inst.data, peers: peers.data, fc: fc.data, fcState: fc, meta: meta.data }
 
   let body
-  if (meta.error) {
-    body = <ErrorNotice title="CU Pulse could not reach its data" error={meta.error} onRetry={reload(['meta'])} />
+  if (waking) {
+    body = <Waking error={meta.error ?? lastError} attempt={attempt} />
+  } else if (meta.error) {
+    body = <ErrorNotice title="CU Pulse could not reach its data" error={meta.error} onRetry={() => setAttempt((a) => a + 1)} />
   } else if (!cu) {
     const Page = section === 'case-study' ? CaseStudy : section === 'accuracy' ? Accuracy : Home
     body = meta.data ? <Page meta={meta.data} /> : <Loading />
   } else if (inst.error) {
-    body = <ErrorNotice title={inst.error.status === 404 ? 'Credit union not found' : 'This credit union could not load'} error={inst.error} onRetry={inst.error.status === 404 ? undefined : reload([`inst:${cu}`])} />
+    body = inst.error.status === 404
+      ? <NotFound cu={cu} />
+      : <ErrorNotice title="This credit union could not load" error={inst.error} onRetry={reload([`inst:${cu}`])} />
   } else if (!meta.data || !inst.data) {
     body = <Loading />
   } else if (section === 'report') {
@@ -205,7 +266,11 @@ export default function App() {
       <div className="page">{body}</div>
       {section !== 'report' && (
         <footer className="footer">
-          <span>CU Pulse · analysis of public NCUA Call Report data. Not affiliated with NCUA or any credit union.</span>
+          <span>
+            Built by <b>Damola Akinyemi</b> as a portfolio project for financial forecasting & reporting roles ·{' '}
+            <a href="https://github.com/Damolaakinyemi/CU-Pulse" target="_blank" rel="noreferrer">GitHub</a>
+          </span>
+          <span>Analysis of public NCUA Call Report data. Not affiliated with NCUA or any credit union.</span>
           {meta.data && <span>Data {quarter(meta.data.first_quarter)}–{quarter(meta.data.latest_quarter)}</span>}
         </footer>
       )}

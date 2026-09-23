@@ -389,6 +389,38 @@ p {
   color: var(--ink-3);
 }
 
+.home-try {
+  max-width: 72ch;
+}
+
+.home-builder {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+  font-size: 13px;
+  color: var(--ink-2);
+  max-width: 72ch;
+}
+
+.home-builder b {
+  color: var(--ink);
+  font-weight: 650;
+}
+
+.footer b {
+  color: var(--ink-2);
+  font-weight: 650;
+}
+
+.notice .muted {
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+.not-found .search.hero {
+  margin-top: 18px;
+}
+
 .home-try b {
   color: var(--ink-2);
   font-weight: 650;
@@ -516,7 +548,6 @@ table.data.pin-first tr.featured td:first-child {
   background: var(--sheet);
   border: 1px solid var(--rule);
   border-top: 3px solid var(--ink);
-  border-radius: var(--radius);
   color: var(--ink);
   text-decoration: none;
   box-shadow: 0 1px 2px rgba(14, 26, 43, 0.05), 0 18px 40px -24px rgba(14, 26, 43, 0.35);
@@ -582,9 +613,6 @@ table.data.pin-first tr.featured td:first-child {
   margin-top: 4px;
 }
 
-.specimen-figs .pctl-caption span:last-child {
-  display: none;
-}
 
 .specimen-cta {
   display: inline-flex;
@@ -935,7 +963,7 @@ table.data.pin-first tr.featured td:first-child {
   align-items: center;
   height: 18px;
   padding: 0 6px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -965,7 +993,7 @@ table.data.pin-first tr.featured td:first-child {
 }
 
 .prov {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--ink-3);
 }
@@ -1213,6 +1241,46 @@ table.data.pin-first tr.featured td:first-child {
 }
 
 /* Chart chrome */
+.chart-figure {
+  margin: 0;
+  position: relative;
+}
+
+.offscale {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1.5px dashed var(--breach);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--breach);
+}
+
+.offscale span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.offscale button {
+  border: 1px solid var(--rule);
+  background: var(--sheet);
+  color: var(--ink-2);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius);
+}
+
+.offscale button:hover,
+.offscale button[aria-pressed='true'] {
+  border-color: var(--ink);
+  color: var(--ink);
+}
 .chart {
   position: relative;
 }
@@ -1224,7 +1292,7 @@ table.data.pin-first tr.featured td:first-child {
 
 .chart .recharts-reference-line-label,
 .chart .recharts-reference-area-label {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -1663,7 +1731,7 @@ input[type='range']::-moz-range-thumb {
 /* ───────────── Method (read mode) ───────────── */
 
 .prose {
-  max-width: 70ch;
+  max-width: 64ch;
   font-size: 14.5px;
   line-height: 1.62;
   color: var(--ink);

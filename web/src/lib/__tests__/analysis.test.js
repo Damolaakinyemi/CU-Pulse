@@ -65,3 +65,28 @@ describe('reading', () => {
     expect(text).toContain('$30 of net worth')
   })
 })
+
+describe('honest readings on volatile forecasts', () => {
+  const path = (lo80, hi80) => [{ quarter: '2027Q2', point: (lo80 + hi80) / 2, lo80, hi80, lo50: lo80, hi50: hi80, lo95: lo80, hi95: hi80 }]
+  const inst = { pca_tier: 'Well capitalized', quarters: [{ quarter: '2026Q2', net_worth_ratio: 0.1086, total_assets: 9.4e6, net_worth: 1e6, loan_growth_yoy: 0.04, deposit_growth_yoy: 0.05, loan_to_share: 0.048 }] }
+
+  it('flags a wide net worth ratio range as low confidence', async () => {
+    const { lowConfidence } = await import('../analysis.js')
+    expect(lowConfidence({ path: path(0.0149, 0.1836) }, 'net_worth_ratio')).toBe(true)
+    expect(lowConfidence({ path: path(0.108, 0.1236) }, 'net_worth_ratio')).toBe(false)
+    expect(lowConfidence({ path: path(9e6, 1.2e7) }, 'total_assets')).toBe(true)
+  })
+
+  it('replaces the outlook and model check instead of quoting noisy numbers', () => {
+    const fc = { origins: 8, series: {
+      net_worth_ratio: { path: path(0.0149, 0.1836) },
+      total_loans: { model: 'ets', model_label: 'ETS', skill_vs_drift: 0.73, backtest: { ets: { error: 0.05, coverage80: 1 } }, path: path(1e5, 2e5) },
+    } }
+    const items = reading(inst, null, fc)
+    const text = (k) => items.find((i) => i.k === k).parts.map((p) => (typeof p === 'string' ? p : p.b ?? p.p)).join('')
+    expect(text('Outlook')).toContain('Too volatile to project usefully')
+    expect(text('Model check')).not.toContain('73%')
+    expect(text('Balance sheet')).toContain('loans are a small part of this balance sheet')
+    expect(text('Balance sheet')).not.toContain('funding is outpacing')
+  })
+})

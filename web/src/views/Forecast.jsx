@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Exhibit, Segmented, Skeleton, Stamp } from '../components/Chrome.jsx'
 import { FanChart, FanLegend } from '../components/Charts.jsx'
-import { fanSeries } from '../lib/analysis.js'
+import { fanSeries, lowConfidence } from '../lib/analysis.js'
 import { pct, quarter, usd } from '../lib/format.js'
 
 const ORDER = ['total_assets', 'total_loans', 'total_shares_deposits', 'net_worth_ratio']
 
-const fmtFor = (key) => (key === 'net_worth_ratio' ? (v) => pct(v) : (v) => usd(v))
+// A ratio cannot be negative; a symmetric interval that crosses zero is shown floored at 0.
+const fmtFor = (key) => (key === 'net_worth_ratio' ? (v) => pct(Math.max(v, 0)) : (v) => usd(v))
 const errFor = (key) => (key === 'net_worth_ratio' ? (v) => `${(v * 100).toFixed(2)} pts` : (v) => pct(v, 2))
 
 function coverageNote(cov, nominal) {
@@ -69,12 +70,17 @@ export default function Forecast({ inst, fc, fcState }) {
             id={`fc-${k}`}
             title={series.label}
             sub={`to ${quarter(end.quarter)}`}
-            tools={<Stamp kind="projected">{`${f(end.lo80)} – ${f(end.hi80)} at 80%`}</Stamp>}
+            tools={
+              <>
+                {lowConfidence(series, k) && <Stamp kind="reported">Low confidence</Stamp>}
+                <Stamp kind="projected">{`${f(end.lo80)} – ${f(end.hi80)} at 80%`}</Stamp>
+              </>
+            }
             source={`${series.accounts.join(' ÷ ')} · Selected: ${series.model_label}${
               series.skill_vs_drift != null ? `, ${Math.round(series.skill_vs_drift * 100)}% lower backtest error than drift` : ''
             }.`}
           >
-            <FanChart rows={fanSeries(inst, series, k, from)} format={f} zones={k === 'net_worth_ratio'} ratio={k === 'net_worth_ratio'} compact height={260} label={series.label} />
+            <FanChart rows={fanSeries(inst, series, k, from)} format={f} zones={k === 'net_worth_ratio'} ratio={k === 'net_worth_ratio'} height={260} label={series.label} />
           </Exhibit>
         )
       })}

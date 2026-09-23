@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Exhibit, Skeleton, Stamp } from '../components/Chrome.jsx'
 import { FanChart, FanLegend, PeerLegend, TrendChart } from '../components/Charts.jsx'
-import { fanSeries, latest, metricSeries, nwrGap, reading } from '../lib/analysis.js'
+import { fanSeries, latest, lowConfidence, metricSeries, nwrGap, reading } from '../lib/analysis.js'
 import { count, fmt, pct, quarter, usd } from '../lib/format.js'
 import { href } from '../lib/router.js'
 
@@ -104,11 +104,16 @@ export default function Overview({ inst, peers, fc, fcState, meta }) {
         id="ex-nw"
         title="Net worth ratio"
         sub="reported and projected four quarters"
-        tools={<FanLegend zones rows={nw} />}
+        tools={
+          <>
+            {lowConfidence(fc?.series?.net_worth_ratio, 'net_worth_ratio') && <Stamp kind="reported">Low confidence</Stamp>}
+            <FanLegend zones rows={nw} />
+          </>
+        }
         source={`Source: NCUA 5300 Call Report, net worth ratio as reported (ACCT_998), ${quarter(meta.first_quarter)}–${quarter(inst.latest_quarter)}. Projection: ${fc?.series?.net_worth_ratio?.model_label ?? 'pending'}; shaded bands are 50, 80 and 95% ranges. Zones: NCUA prompt corrective action, 12 CFR 702.102.`}
       >
         {fc || fcState.error ? (
-          <FanChart rows={nw} format={fmt.pct} zones compact={narrow} height={narrow ? 300 : 430} label="Net worth ratio" />
+          <FanChart rows={nw} format={fmt.pct} zones height={narrow ? 300 : 430} label="Net worth ratio" />
         ) : (
           <Skeleton height={430} />
         )}

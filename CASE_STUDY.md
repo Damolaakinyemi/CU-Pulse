@@ -31,12 +31,15 @@ Capital rolled forward four quarters: pre-loss earnings less any charge-offs abo
 | Scenario | Net worth ratio at Q2 2027 | Extra charge-offs before 7% |
 |---|---:|---:|
 | Reported, Q2 2026 | 11.65% | |
-| No further shock | 12.51% | +7.9% (10.3% all-in) |
+| Earnings retention: no shock, all of today's 1.41% ROA kept, assets +4.5% | 12.51% | +7.9% (10.3% all-in) |
 | Severe: charge-offs +2.5 pts, pre-loss ROA −0.5 pts, assets +6 pts faster | 9.67% | +6.5% |
+| Statistical forecast (ARIMA(1,1,0) with drift) | 11.58% | |
 
 ## What the forecast says, and how far to trust it
 
 Loans are projected at $158.5B by Q2 2027 (80% range $154.8B–$162.4B); the net worth ratio at 11.58%. In Navy Federal's own backtest the selected loans model (Exponential smoothing (damped trend, quarterly seasonal)) had 1.7% mean absolute percentage error, and its 80% ranges held 75% of outcomes: useful for direction, too confident on range.
+
+**Why the forecast (11.58%) sits below the earnings-retention case (12.51%).** They answer different questions. The retention case applies today's 1.41% ROA to assets growing 4.5% a year. The forecast extrapolates the ratio's own history, in which assets grew about 10.5% a year against an average year-end ROA of 1.22%; earnings roughly kept pace with growth, and the ratio stayed between 10.55% and 12.53%. Dividends on shares are already an expense before net income, so they are not the gap.
 
 Across all 4,299 active credit unions, choosing the model on early quarters and scoring it on later ones it never saw, the loans forecast cut median error by 21% against a random walk with drift (4.09% vs 5.17%), beating it for 57% of credit unions, and its 80% ranges held 72% of outcomes.
 

@@ -1,3 +1,5 @@
+import { ArrowDown } from 'lucide-react'
+import { useState } from 'react'
 import {
   Area,
   CartesianGrid,
@@ -10,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { isNum, pct, quarterTick, usd } from '../lib/format.js'
+import { isNum, ordinal, pct, quarter, quarterTick, usd } from '../lib/format.js'
 import { extent, niceStep, niceTicks, zonesInView } from '../lib/chartmath.js'
 import { AXIS, C, GRID } from '../lib/theme.js'
 import { Readout } from './Chrome.jsx'
@@ -45,17 +47,10 @@ const TIERS = [
  * Net worth ratio tiers (12 CFR 702.102) as graded, ruled depth bands. When the
  * axis stops above 7%, the line is drawn at the plot floor and says how far off-scale it is.
  */
-function PcaZones({ domain, current, compact }) {
+function PcaZones({ domain }) {
   const [lo, hi] = domain
   const label = { position: 'insideBottomLeft', fill: C.breach, fontSize: 10.5, fontWeight: 600, dy: -3 }
-  if (lo >= 0.07) {
-    const pts = isNum(current) ? ((current - 0.07) * 100).toFixed(2) : null
-    const value = compact
-      ? `7% · ${pts} pts below`
-      : `Well capitalized 7%, off scale${pts ? ` · ${pts} pts below latest` : ''}`
-    const y = lo + (hi - lo) * 0.004
-    return <ReferenceLine y={y} stroke={C.breach} strokeWidth={1} strokeDasharray="5 3" label={{ ...label, value }} />
-  }
+  if (lo >= 0.07) return null // FanChart annotates an off-scale line below the plot instead
   return (
     <>
       {TIERS.filter((t) => lo < t.y2).map((t) => (
@@ -98,24 +93,33 @@ function Hatches() {
  * Reported history in ink and the four-quarter projection as a graded fan.
  * rows: [{ quarter, actual?, point?, b50?, b80?, b95? }]
  */
-export function FanChart({ rows, format, height = 300, zones = false, ratio = zones, reveal = true, compact = false, label = 'Value' }) {
+export function FanChart({ rows, format, height = 300, zones = false, ratio = zones, reveal = true, label = 'Value' }) {
+  const [showTiers, setShowTiers] = useState(false)
   const [lo, hi] = extent(rows, ['actual', 'b95'])
   let domain = niceDomain([lo, hi])
-  // Bring the well-capitalized line into view when capital is within 3 points of it.
-  if (zones && zonesInView(rows)) domain = [Math.min(domain[0], 0.064), domain[1]]
-  const current = [...rows].reverse().find((r) => isNum(r.actual))?.actual
+  // Bring the capital tiers into view when capital is within 3 points of 7%, or on request.
+  if (zones && (zonesInView(rows) || showTiers)) domain = [Math.min(domain[0], showTiers ? 0.035 : 0.064), domain[1]]
+  // A ratio cannot fall below zero; do not draw a fan into impossible territory.
+  if (ratio) domain = [Math.max(domain[0], 0), domain[1]]
+  const current = [...rows].reverse().find((r) => isNum(r.actual))
   const axisFormat = ratio ? pctAxis(domain, 5) : format
   const origin = rows.find((r) => r.origin)?.quarter
-  const last = rows[rows.length - 1]?.quarter
+  const last = rows[rows.length - 1]
+  const offScale = zones && domain[0] >= 0.07
+  const summary = [
+    current && `${label} ${format(current.actual)} reported for ${quarter(current.quarter)}`,
+    last && isNum(last.point) && !last.origin && `projected ${format(last.point)} by ${quarter(last.quarter)}, 80% range ${format(last.b80[0])} to ${format(last.b80[1])}`,
+  ].filter(Boolean).join('; ')
 
   return (
+    <figure className="chart-figure" aria-label={summary}>
     <div className={`chart ${reveal ? 'fan-reveal' : ''}`} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={rows} syncId={SYNC} margin={{ top: 8, right: 6, bottom: 0, left: 0 }}>
+        <ComposedChart data={rows} syncId={SYNC} accessibilityLayer title={`${label}, reported and projected. Use the arrow keys to step through quarters.`} margin={{ top: 8, right: 6, bottom: 0, left: 0 }}>
           <Hatches />
           <CartesianGrid {...GRID} />
-          {origin && <ReferenceArea x1={origin} x2={last} fill={C.fan} fillOpacity={0.035} ifOverflow="hidden" />}
-          {zones && <PcaZones domain={domain} current={current} compact={compact} />}
+          {origin && <ReferenceArea x1={origin} x2={last?.quarter} fill={C.fan} fillOpacity={0.035} ifOverflow="hidden" />}
+          {zones && <PcaZones domain={domain} />}
           <XAxis dataKey="quarter" {...AXIS} tickFormatter={quarterTick} interval={0} minTickGap={0} height={22} />
           <YAxis {...AXIS} domain={domain} ticks={niceTicks(domain, 5)} tickFormatter={(v) => axisFormat(v)} width={62} allowDataOverflow />
           <Area className="fan-area" dataKey="b95" stroke="none" fill={C.fan95} fillOpacity={1} isAnimationActive={false} activeDot={false} connectNulls />
@@ -145,16 +149,44 @@ export function FanChart({ rows, format, height = 300, zones = false, ratio = zo
         </ComposedChart>
       </ResponsiveContainer>
     </div>
+    {zones && (offScale || showTiers) && isNum(current?.actual) && (
+      <figcaption className="offscale">
+        {offScale && (
+          <span>
+            <ArrowDown size={12} strokeWidth={2.5} aria-hidden="true" /> 7% well capitalized is{' '}
+            {((current.actual - 0.07) * 100).toFixed(2)} pts below the latest ratio, off the bottom of this axis
+          </span>
+        )}
+        <button type="button" onClick={() => setShowTiers((v) => !v)} aria-pressed={showTiers}>
+          {showTiers ? 'Hide capital tiers' : 'Show capital tiers'}
+        </button>
+      </figcaption>
+    )}
+    </figure>
   )
 }
 
 /** A metric against its peer corridor: median line inside the middle-50% band. */
 export function TrendChart({ rows, format = (v) => pct(v), height = 190, label }) {
   const domain = niceDomain(extent(rows, ['value', 'iqr', 'median']), { pad: 0.1 })
+  const now = [...rows].reverse().find((r) => isNum(r.value))
+  const summary = now
+    ? `${label} ${format(now.value)} in ${quarter(now.quarter)}${isNum(now.median) ? `; peer median ${format(now.median)}` : ''}${isNum(now.percentile) ? `; ${ordinal(now.percentile)} percentile of peers` : ''}`
+    : label
   return (
-    <div className="chart" style={{ height }}>
+    <figure className="chart-figure" aria-label={summary}>
+    <table className="visually-hidden">
+      <caption>{label} by quarter</caption>
+      <thead><tr><th scope="col">Quarter</th><th scope="col">{label}</th><th scope="col">Peer median</th></tr></thead>
+      <tbody>
+        {rows.filter((r) => isNum(r.value)).map((r) => (
+          <tr key={r.quarter}><th scope="row">{quarter(r.quarter)}</th><td>{format(r.value)}</td><td>{isNum(r.median) ? format(r.median) : 'n/a'}</td></tr>
+        ))}
+      </tbody>
+    </table>
+    <div className="chart" style={{ height }} aria-hidden="true">
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={rows} syncId={SYNC} margin={{ top: 6, right: 4, bottom: 0, left: 0 }}>
+        <ComposedChart data={rows} syncId={SYNC} accessibilityLayer={false} margin={{ top: 6, right: 4, bottom: 0, left: 0 }}>
           <CartesianGrid {...GRID} />
           <XAxis dataKey="quarter" {...AXIS} tickFormatter={quarterTick} interval={0} height={20} />
           <YAxis {...AXIS} domain={domain} ticks={niceTicks(domain, 4)} tickFormatter={pctAxis(domain, 4)} width={48} />
@@ -179,6 +211,7 @@ export function TrendChart({ rows, format = (v) => pct(v), height = 190, label }
         </ComposedChart>
       </ResponsiveContainer>
     </div>
+    </figure>
   )
 }
 
@@ -189,7 +222,7 @@ export function StressChart({ rows, height = 340 }) {
   return (
     <div className="chart" style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={rows} margin={{ top: 10, right: 8, bottom: 0, left: 0 }}>
+        <ComposedChart data={rows} accessibilityLayer title="Net worth ratio under the scenario. Use the arrow keys to step through quarters." margin={{ top: 10, right: 8, bottom: 0, left: 0 }}>
           <Hatches />
           <CartesianGrid {...GRID} />
           <PcaZones domain={domain} />
@@ -236,7 +269,7 @@ export function FanLegend({ zones, rows }) {
       <span><i className="swatch line" /> Reported</span>
       <span><i className="swatch dash" /> Projected</span>
       <span><i className="swatch fan" /> 50 · 80 · 95% ranges</span>
-      {zones && <span><i className="swatch rule-breach" /> 7% well capitalized</span>}
+      {zones && tiers && <span><i className="swatch rule-breach" /> 7% well capitalized</span>}
       {tiers && <span><i className="swatch hatch" /> Below well capitalized</span>}
     </div>
   )

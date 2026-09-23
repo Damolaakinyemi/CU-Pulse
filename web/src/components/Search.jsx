@@ -17,7 +17,7 @@ function Highlight({ text, needle }) {
 }
 
 /** Institution combobox. ⌘K or / focuses it from anywhere. */
-export default function Search({ section, variant }) {
+export default function Search({ section, variant, shortcut = true }) {
   const [q, setQ] = useState('')
   const [open, setOpen] = useState(false)
   const [results, setResults] = useState([])
@@ -28,6 +28,7 @@ export default function Search({ section, variant }) {
   const listId = useId()
 
   useEffect(() => {
+    if (!shortcut) return undefined
     const onKey = (e) => {
       const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName)
       if ((e.key === 'k' && (e.metaKey || e.ctrlKey)) || (e.key === '/' && !typing)) {
@@ -39,7 +40,7 @@ export default function Search({ section, variant }) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [shortcut])
 
   useEffect(() => {
     if (!open) return undefined
@@ -112,7 +113,7 @@ export default function Search({ section, variant }) {
           spellCheck={false}
           autoComplete="off"
         />
-        <span className="kbd" aria-hidden="true">⌘K</span>
+        {shortcut && <span className="kbd" aria-hidden="true">⌘K</span>}
       </label>
       {expanded && (
         <ul className="search-list" id={listId} role="listbox" aria-label="Credit unions">
