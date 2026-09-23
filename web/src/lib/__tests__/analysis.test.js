@@ -34,8 +34,8 @@ describe('stress test', () => {
     expect(calm.nco).toBe(base.nco)
     expect(calm.roaShift + 0).toBe(0)
     const severe = scenarioAt(base, 100)
-    expect(severe.nco).toBeCloseTo(base.nco + 0.025)
-    expect(severe.roaShift).toBeCloseTo(-0.005)
+    expect(severe.nco).toBeCloseTo(base.nco + 0.012)
+    expect(severe.roaShift).toBeCloseTo(-0.003)
   })
 
   it('starts from the reported net worth ratio, not the balance-sheet quotient', () => {

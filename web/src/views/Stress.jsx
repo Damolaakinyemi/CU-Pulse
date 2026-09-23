@@ -2,7 +2,7 @@ import { Check, Link as LinkIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Exhibit, Stamp } from '../components/Chrome.jsx'
 import { StressChart } from '../components/Charts.jsx'
-import { SEVERE, WELL_CAPITALIZED, breakevenNco, projectCapital, scenarioAt, stressBaseline } from '../lib/analysis.js'
+import { LEVER_LIMITS, SEVERE, WELL_CAPITALIZED, breakevenNco, projectCapital, scenarioAt, stressBaseline } from '../lib/analysis.js'
 import { bp, isNum, pct, quarter, usd } from '../lib/format.js'
 import { extent } from '../lib/chartmath.js'
 import { useTween } from '../lib/motion.js'
@@ -36,8 +36,13 @@ export default function Stress({ inst, fc }) {
   const severity = Math.min(100, Math.max(0, Number(sevParam) || 0))
   const setSeverity = (v) => setSevParam(String(v))
   const parsed = leverParam?.split(',').map(Number)
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v))
   const override = parsed?.length === 3 && parsed.every(Number.isFinite)
-    ? { nco: parsed[0], roaShift: parsed[1], growth: parsed[2] }
+    ? {
+        nco: clamp(parsed[0], 0, base.nco + LEVER_LIMITS.ncoAbove),
+        roaShift: clamp(parsed[1], LEVER_LIMITS.roaMin, LEVER_LIMITS.roaMax),
+        growth: clamp(parsed[2], LEVER_LIMITS.growthMin, LEVER_LIMITS.growthMax),
+      }
     : null
   const setOverride = (o) => setLeverParam(o ? [o.nco, o.roaShift, o.growth].map((x) => +x.toFixed(4)).join(',') : null)
 
@@ -112,7 +117,7 @@ export default function Stress({ inst, fc }) {
             {copied ? 'Link copied' : 'Copy link to this scenario'}
           </button>
         }
-        source={`Severity scales three levers together, linearly, up to: net charge-offs +${(SEVERE.nco * 100).toFixed(1)} pts, pre-loss ROA ${(SEVERE.roa * 100).toFixed(2)} pts, asset growth +${(SEVERE.growth * 100).toFixed(0)} pts (a deposit inflow that dilutes capital). Fine-tune any lever to break the link. At severity 0 (earnings retention) all of today's ROA is kept as net worth, while the dashed model baseline extrapolates the ratio's own history, so the two can differ. Illustrative capital arithmetic, not NCUA stress-testing methodology.`}
+        source={`Severity scales three levers together, linearly, up to a severe case calibrated to 2018–2026 history: net charge-offs +${(SEVERE.nco * 100).toFixed(1)} pts (the 95th-percentile rise among credit unions over $1B), pre-loss ROA ${(SEVERE.roa * 100).toFixed(1)} pts, asset growth +${(SEVERE.growth * 100).toFixed(0)} pts (a deposit inflow like 2020's, which dilutes capital). Manual charge-offs are capped at today's rate + 3 pts. Fine-tune any lever to break the link. At severity 0 (earnings retention) all of today's ROA is kept as net worth, while the dashed model baseline extrapolates the ratio's own history, so the two can differ. Illustrative capital arithmetic, not NCUA stress-testing methodology.`}
       >
         <div className="severity">
           <div className="lever-head">
@@ -153,9 +158,9 @@ export default function Stress({ inst, fc }) {
         <Lever
           id="nco"
           label="Net charge-off rate"
-          value={levers.nco}
+          value={Math.min(levers.nco, base.nco + LEVER_LIMITS.ncoAbove)}
           min={0}
-          max={0.08}
+          max={+(base.nco + LEVER_LIMITS.ncoAbove).toFixed(4)}
           step={0.0005}
           onChange={setLever('nco')}
           format={(v) => `${pct(v)} · ${bp(v - base.nco)}`}
@@ -164,9 +169,9 @@ export default function Stress({ inst, fc }) {
         <Lever
           id="roa"
           label="Pre-loss ROA shift"
-          value={levers.roaShift}
-          min={-0.015}
-          max={0.005}
+          value={Math.max(levers.roaShift, LEVER_LIMITS.roaMin)}
+          min={LEVER_LIMITS.roaMin}
+          max={LEVER_LIMITS.roaMax}
           step={0.0005}
           onChange={setLever('roaShift')}
           format={(v) => bp(v)}
@@ -176,8 +181,8 @@ export default function Stress({ inst, fc }) {
           id="growth"
           label="Asset growth, annualized"
           value={levers.growth}
-          min={-0.1}
-          max={0.25}
+          min={LEVER_LIMITS.growthMin}
+          max={LEVER_LIMITS.growthMax}
           step={0.0025}
           onChange={setLever('growth')}
           format={(v) => pct(v, 1)}

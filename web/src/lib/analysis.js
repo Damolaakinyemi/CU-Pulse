@@ -177,7 +177,14 @@ export function reading(inst, peers, fc) {
 
 /* ───────────── Stress test ───────────── */
 
-export const SEVERE = { nco: 0.025, roa: -0.005, growth: 0.06 }
+// Severe case, calibrated to what actually happened 2018–2026 among credit unions over $1B:
+// +1.2 pts of charge-offs is the 95th-percentile rise (median +0.4, 99th +2.1); pre-loss ROA
+// −0.3 pts (most historical ROA declines were the losses themselves, counted separately);
+// +6 pts of asset growth sits inside the 2020 deposit surge (industry shares +20%).
+export const SEVERE = { nco: 0.012, roa: -0.003, growth: 0.06 }
+
+// Manual lever limits: charge-offs up to today's rate + 3 pts (above the worst rise on record).
+export const LEVER_LIMITS = { ncoAbove: 0.03, roaMin: -0.01, roaMax: 0.005, growthMin: -0.1, growthMax: 0.25 }
 
 export function stressBaseline(inst, fc) {
   const now = latest(inst)

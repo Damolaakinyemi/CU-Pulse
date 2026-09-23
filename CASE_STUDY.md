@@ -32,7 +32,7 @@ Capital rolled forward four quarters: pre-loss earnings less any charge-offs abo
 |---|---:|---:|
 | Reported, Q2 2026 | 11.65% | |
 | Earnings retention: no shock, all of today's 1.41% ROA kept, assets +4.5% | 12.51% | +7.9% (10.3% all-in) |
-| Severe: charge-offs +2.5 pts, pre-loss ROA −0.5 pts, assets +6 pts faster | 9.67% | +6.5% |
+| Severe (95th-percentile charge-off rise, 2018–2026): charge-offs +1.2 pts, pre-loss ROA −0.3 pts, assets +6 pts faster | 10.73% | +6.8% |
 | Statistical forecast (ARIMA(1,1,0) with drift) | 11.58% | |
 
 ## What the forecast says, and how far to trust it

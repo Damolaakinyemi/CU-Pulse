@@ -22,7 +22,7 @@ BACKTEST = ROOT / "data" / "processed" / "backtest_summary.json"
 OUT = ROOT.parent / "CASE_STUDY.md"
 CU = 5536
 WELL = 0.07
-SEVERE = {"nco": 0.025, "roa": -0.005, "growth": 0.06}  # matches web/src/lib/analysis.js
+SEVERE = {"nco": 0.012, "roa": -0.003, "growth": 0.06}  # matches web/src/lib/analysis.js (history-calibrated)
 
 
 def pct(v, d=2):
@@ -161,7 +161,7 @@ def main():
         "|---|---:|---:|",
         f"| Reported, {quarter(now.quarter)} | {pct(now.net_worth_ratio)} | |",
         f"| Earnings retention: no shock, all of today's {pct(now.roa)} ROA kept, assets +{pct(growth, 1)} | {pct(calm)} | +{pct(calm_be, 1)} ({pct(base['nco'] + calm_be, 1)} all-in) |",
-        f"| Severe: charge-offs +2.5 pts, pre-loss ROA −0.5 pts, assets +6 pts faster | {pct(severe)} | +{pct(severe_be, 1)} |",
+        f"| Severe (95th-percentile charge-off rise, 2018–2026): charge-offs +1.2 pts, pre-loss ROA −0.3 pts, assets +6 pts faster | {pct(severe)} | +{pct(severe_be, 1)} |",
         f"| Statistical forecast ({fc['series']['net_worth_ratio']['model_label']}) | {pct(nw_end['point'])} | |",
         "",
         "## What the forecast says, and how far to trust it",

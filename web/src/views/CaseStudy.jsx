@@ -2,7 +2,7 @@ import { NextStep } from '../components/Plain.jsx'
 import { api, useResource } from '../api.js'
 import { ErrorNotice, Exhibit, Skeleton } from '../components/Chrome.jsx'
 import { FanChart, FanLegend, PeerLegend, TrendChart } from '../components/Charts.jsx'
-import { WELL_CAPITALIZED, breakevenNco, fanSeries, latest, latestPeer, metricSeries, projectCapital, scenarioAt, stressBaseline } from '../lib/analysis.js'
+import { SEVERE, WELL_CAPITALIZED, breakevenNco, fanSeries, latest, latestPeer, metricSeries, projectCapital, scenarioAt, stressBaseline } from '../lib/analysis.js'
 import { fmt, isNum, ordinal, pct, quarter, usd } from '../lib/format.js'
 import { href } from '../lib/router.js'
 import { errFmt } from '../lib/backtest.js'
@@ -172,8 +172,9 @@ export default function CaseStudy({ meta }) {
             <b>{pct(calmBreak, 1)}</b> of annualized charge-offs, {pct(base.nco + calmBreak, 1)} all-in, before falling to 7%.
           </p>
           <p>
-            In the severe case (charge-offs up 2.5 points, pre-loss ROA down 0.5 points and a deposit inflow that grows assets
-            6 points faster), the ratio ends at <b>{pct(severeEnd.ratio)}</b>
+            In the severe case, calibrated to the worst 5% of charge-off rises large credit unions saw from 2018 to 2026
+            (charge-offs up {(SEVERE.nco * 100).toFixed(1)} points, pre-loss ROA down {(-SEVERE.roa * 100).toFixed(1)} points, and a
+            deposit inflow that grows assets {(SEVERE.growth * 100).toFixed(0)} points faster), the ratio ends at <b>{pct(severeEnd.ratio)}</b>
             {holds ? `, still well capitalized, with room for a further ${pct(severeBreak, 1)} of charge-offs.` : ', below the well-capitalized line.'} The arithmetic is deliberately simple and ignores interest-rate risk; see the
             caveats.
           </p>
