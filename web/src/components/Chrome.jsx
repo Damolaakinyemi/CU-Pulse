@@ -1,4 +1,5 @@
 import { AlertTriangle, RotateCw } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { isNum, ordinal } from '../lib/format.js'
 
 export function Exhibit({ title, sub, tools, source, className = '', children, id }) {
@@ -35,6 +36,12 @@ export function Segmented({ label, options, value, onChange }) {
 
 /** Peer position on a rule: IQR box, median tick, institution mark. */
 export function PercentileRule({ value, peer, better, compact = false }) {
+  // The mark starts on the peer median and travels to its place: distance from typical, shown.
+  const [arrived, setArrived] = useState(false)
+  useEffect(() => {
+    const f = requestAnimationFrame(() => requestAnimationFrame(() => setArrived(true)))
+    return () => cancelAnimationFrame(f)
+  }, [])
   if (!peer || !isNum(value) || !isNum(peer.p25)) {
     return <div className="pctl pctl-caption">Peer comparison not available</div>
   }
@@ -56,7 +63,10 @@ export function PercentileRule({ value, peer, better, compact = false }) {
       <div className="pctl-track" aria-hidden="true">
         <div className="pctl-iqr" style={{ left: x(peer.p25), width: `calc(${x(peer.p75)} - ${x(peer.p25)})` }} />
         <div className="pctl-median" style={{ left: x(peer.median) }} />
-        <div className="pctl-mark" style={{ left: x(value) }} />
+        {/* A full-width slot translated by a percent of its own width = a percent of the track (compositor-only motion). */}
+        <div className="pctl-slot" style={{ transform: `translateX(${arrived ? x(value) : x(peer.median)})` }}>
+          <div className="pctl-mark" />
+        </div>
       </div>
       {compact ? (
         <div className="pctl-caption" aria-hidden="true">

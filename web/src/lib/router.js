@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
+import { prefersReducedMotion } from './motion.js'
 
 export const SECTIONS = [
   { id: 'overview', label: 'Overview' },
@@ -28,7 +30,12 @@ export function useRoute() {
   const [route, setRoute] = useState(() => parse(window.location.hash))
   useEffect(() => {
     const onHash = () => {
-      setRoute(parse(window.location.hash))
+      const next = parse(window.location.hash)
+      if (document.startViewTransition && !prefersReducedMotion()) {
+        document.startViewTransition(() => flushSync(() => setRoute(next)))
+      } else {
+        setRoute(next)
+      }
     }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)

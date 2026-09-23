@@ -1548,8 +1548,75 @@ table.data.pin-first tr.featured td:first-child {
   to { clip-path: inset(0 0 0 0); }
 }
 
+/* Stress: the 7% line thickens the moment the scenario crosses it */
+.stress-chart .line-7 line {
+  stroke-width: 1.25px;
+  transition: stroke-width 260ms var(--ease-out), stroke-opacity 260ms var(--ease-out);
+}
+
+.stress-chart.is-breach .line-7 line {
+  stroke-width: 3px;
+}
+
+.stamp-in {
+  display: inline-flex;
+  animation: stamp-in 320ms var(--ease-out) both;
+}
+
+@keyframes stamp-in {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+.outcome .v {
+  transition: color 220ms var(--ease-out);
+}
+
+/* Peer position: the mark travels from the median */
+.pctl-slot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: transform 650ms var(--ease-out);
+}
+
+.pctl-slot .pctl-mark {
+  left: 0;
+}
+
+/* Popovers and the search list ease in */
+.term-pop:not([hidden]),
+.search-list {
+  animation: pop-in 140ms var(--ease-out) both;
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Page continuity: content crossfades, the bar stays put */
+.bar {
+  view-transition-name: topbar;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+  animation-timing-function: var(--ease-out);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .fan-reveal .fan-area {
+    animation: none;
+  }
+  .pctl-slot,
+  .stress-chart .line-7 line {
+    transition: none;
+  }
+  .stamp-in,
+  .term-pop:not([hidden]),
+  .search-list {
     animation: none;
   }
   * {

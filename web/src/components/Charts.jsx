@@ -14,6 +14,7 @@ import {
 } from 'recharts'
 import { isNum, ordinal, pct, quarter, quarterTick, usd } from '../lib/format.js'
 import { extent, niceStep, niceTicks, zonesInView } from '../lib/chartmath.js'
+import { useTweenRows } from '../lib/motion.js'
 import { AXIS, C, GRID } from '../lib/theme.js'
 import { Readout } from './Chrome.jsx'
 
@@ -66,7 +67,7 @@ function PcaZones({ domain }) {
       ))}
       {lo < 0.04 && <ReferenceLine y={0.04} stroke={C.breach} strokeOpacity={0.5} strokeWidth={0.75} />}
       {lo < 0.06 && <ReferenceLine y={0.06} stroke={C.breach} strokeOpacity={0.6} strokeWidth={0.75} />}
-      <ReferenceLine y={0.07} stroke={C.breach} strokeWidth={1.25} label={{ ...label, value: 'Well capitalized 7%' }} />
+      <ReferenceLine y={0.07} className="line-7" stroke={C.breach} strokeWidth={1.25} label={{ ...label, value: 'Well capitalized 7%' }} />
     </>
   )
 }
@@ -113,7 +114,7 @@ export function FanChart({ rows, format, height = 300, zones = false, ratio = zo
 
   return (
     <figure className="chart-figure" aria-label={summary}>
-    <div className={`chart ${reveal ? 'fan-reveal' : ''}`} style={{ height }}>
+    <div key={`${rows.length}:${current?.quarter}:${current?.actual}:${last?.point}`} className={`chart ${reveal ? 'fan-reveal' : ''}`} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} syncId={SYNC} accessibilityLayer title={`${label}, reported and projected. Use the arrow keys to step through quarters.`} margin={{ top: 8, right: 6, bottom: 0, left: 0 }}>
           <Hatches />
@@ -216,11 +217,15 @@ export function TrendChart({ rows, format = (v) => pct(v), height = 190, label }
 }
 
 /** Stress path versus baseline projection, over the PCA zones. */
-export function StressChart({ rows, height = 340 }) {
-  const [lo, hi] = extent(rows, ['stress', 'baseline', 's80'])
+export function StressChart({ rows: target, height = 340, bounds, breach = false }) {
+  // A fixed axis (spanning calm to severe) lets the scenario move against a steady ruler,
+  // and the path glides to each new scenario rather than jumping.
+  const rows = useTweenRows(target)
+  const [lo, hi] = bounds ?? extent(target, ['stress', 'baseline', 's80'])
   const domain = [Math.min(lo - 0.004, 0.058), hi + (hi - Math.min(lo, 0.06)) * 0.1]
+  const motion = { isAnimationActive: false }
   return (
-    <div className="chart" style={{ height }}>
+    <div className={`chart stress-chart ${breach ? 'is-breach' : ''}`} style={{ height }}>
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={rows} accessibilityLayer title="Net worth ratio under the scenario. Use the arrow keys to step through quarters." margin={{ top: 10, right: 8, bottom: 0, left: 0 }}>
           <Hatches />
@@ -228,14 +233,14 @@ export function StressChart({ rows, height = 340 }) {
           <PcaZones domain={domain} />
           <XAxis dataKey="quarter" {...AXIS} tickFormatter={(q) => `${q.slice(4)} ’${q.slice(2, 4)}`} height={22} />
           <YAxis {...AXIS} domain={domain} ticks={niceTicks(domain, 6)} tickFormatter={pctAxis(domain, 6)} width={52} allowDataOverflow />
-          <Area dataKey="s80" stroke="none" fill={C.fan80} fillOpacity={1} isAnimationActive={false} activeDot={false} connectNulls />
-          <Area dataKey="s50" stroke="none" fill={C.fan50} fillOpacity={1} isAnimationActive={false} activeDot={false} connectNulls />
+          <Area dataKey="s80" stroke="none" fill={C.fan80} fillOpacity={1} {...motion} activeDot={false} connectNulls />
+          <Area dataKey="s50" stroke="none" fill={C.fan50} fillOpacity={1} {...motion} activeDot={false} connectNulls />
           <Line dataKey="baseline" stroke={C.fanInk} strokeWidth={1.5} strokeDasharray="4 3" dot={false} isAnimationActive={false} connectNulls />
           <Line
             dataKey="stress"
             stroke={C.ink}
             strokeWidth={2.25}
-            isAnimationActive={false}
+            {...motion}
             dot={(p) => {
               const breach = isNum(p.value) && p.value < 0.07
               return <circle key={p.index} cx={p.cx} cy={p.cy} r={3.5} fill={breach ? C.breach : C.ink} stroke={C.sheet} strokeWidth={1.5} />
