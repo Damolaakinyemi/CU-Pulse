@@ -3,7 +3,6 @@ import { Exhibit, Skeleton, Stamp } from '../components/Chrome.jsx'
 import { FanChart, FanLegend, PeerLegend, TrendChart } from '../components/Charts.jsx'
 import { fanSeries, latest, lowConfidence, metricSeries, nwrGap, reading } from '../lib/analysis.js'
 import { count, fmt, pct, quarter, usd } from '../lib/format.js'
-import { href } from '../lib/router.js'
 
 export function Reading({ inst, peers, fc }) {
   const items = reading(inst, peers, fc)
@@ -93,12 +92,6 @@ export default function Overview({ inst, peers, fc, fcState, meta }) {
 
   return (
     <div className="grid">
-      <p className="span-12 figure-notes">
-        <b>About these figures.</b> Net worth ratio is the figure each credit union reported to NCUA. Other ratios are
-        derived from Call Report balances using Financial Performance Report conventions and can differ slightly from
-        NCUA’s own FPR. Projections, readings and stress results are CU Pulse model output, not NCUA data. Names are NCUA’s
-        short listings. <a href={href(inst.cu_number, 'method') + '#m-notes'}>Data notes</a>
-      </p>
       <Exhibit
         className="span-8"
         id="ex-nw"

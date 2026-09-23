@@ -1,8 +1,8 @@
-import { useState } from 'react'
 import { Exhibit, Segmented } from '../components/Chrome.jsx'
 import { PeerLegend, TrendChart } from '../components/Charts.jsx'
 import { metricSeries } from '../lib/analysis.js'
 import { isNum, ordinal, pct, quarter } from '../lib/format.js'
+import { useHashParam } from '../lib/router.js'
 
 const RANGES = [
   { value: 3, label: '3Y' },
@@ -11,7 +11,9 @@ const RANGES = [
 ]
 
 export default function Trends({ inst, peers, meta }) {
-  const [years, setYears] = useState(5)
+  const [rangeParam, setRange] = useHashParam('range', '5')
+  const years = { 3: 3, 5: 5, all: 99 }[rangeParam] ?? 5
+  const setYears = (y) => setRange(y === 99 ? 'all' : String(y))
   const last = inst.latest_quarter
   const from = years === 99 ? null : `${Number(last.slice(0, 4)) - years}${last.slice(4)}`
   const keys = Object.keys(meta.definitions)

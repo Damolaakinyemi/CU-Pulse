@@ -1,9 +1,8 @@
 import { ArrowDown, ArrowUp } from 'lucide-react'
-import { useMemo, useState } from 'react'
 import { Exhibit } from '../components/Chrome.jsx'
 import { latest } from '../lib/analysis.js'
 import { isNum, ordinal, pct, usd } from '../lib/format.js'
-import { href } from '../lib/router.js'
+import { href, useHashParam } from '../lib/router.js'
 import { C } from '../lib/theme.js'
 
 const COLS = [
@@ -74,20 +73,29 @@ function Strip({ label, values, subject, format, better }) {
 }
 
 export default function Peers({ inst, peers, meta }) {
-  const [sort, setSort] = useState({ key: 'total_assets', dir: -1 })
+  const [sortParam, setSortParam] = useHashParam('sort', 'total_assets.desc')
+  const [rawKey, rawDir] = sortParam.split('.')
+  const sortKey = COLS.some(([k]) => k === rawKey) ? rawKey : 'total_assets'
+  const sortDir = rawDir === 'asc' ? 1 : -1
+  const sort = { key: sortKey, dir: sortDir }
+  const setSort = (next) => {
+    const n = typeof next === 'function' ? next(sort) : next
+    setSortParam(`${n.key}.${n.dir === 1 ? 'asc' : 'desc'}`)
+  }
   const now = latest(inst)
 
-  const rows = useMemo(() => {
+  // 25 rows: sorting on every render is cheaper than memoizing it.
+  const rows = (() => {
     const list = [...peers.members]
     list.sort((a, b) => {
-      const av = a[sort.key]
-      const bv = b[sort.key]
+      const av = a[sortKey]
+      const bv = b[sortKey]
       if (!isNum(av)) return 1
       if (!isNum(bv)) return -1
-      return (av - bv) * sort.dir
+      return (av - bv) * sortDir
     })
     return list
-  }, [peers.members, sort])
+  })()
 
   const toggle = (key) => setSort((s) => ({ key, dir: s.key === key ? -s.dir : -1 }))
 

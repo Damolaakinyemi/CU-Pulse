@@ -1,3 +1,4 @@
+import { NextStep } from '../components/Plain.jsx'
 import { api, useResource } from '../api.js'
 import { ErrorNotice, Exhibit, Skeleton } from '../components/Chrome.jsx'
 import { FanChart, FanLegend, PeerLegend, TrendChart } from '../components/Charts.jsx'
@@ -267,6 +268,9 @@ export default function CaseStudy({ meta }) {
           </p>
         </div>
       </div>
+      <NextStep to="#/accuracy" label="How accurate are the forecasts?">
+        The same model, scored on every credit union.
+      </NextStep>
     </article>
   )
 }

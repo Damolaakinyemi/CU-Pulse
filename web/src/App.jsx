@@ -11,7 +11,7 @@ import Accuracy from './views/Accuracy.jsx'
 import CaseStudy from './views/CaseStudy.jsx'
 import Forecast from './views/Forecast.jsx'
 import Glossary from './views/Glossary.jsx'
-import { Guide, PlainSummary } from './components/Plain.jsx'
+import { Guide, NextStep, PlainSummary } from './components/Plain.jsx'
 import Home from './views/Home.jsx'
 import Method from './views/Method.jsx'
 import Overview from './views/Overview.jsx'
@@ -77,6 +77,21 @@ const SECTION_QUESTION = {
   peers: 'How does this credit union compare, one measure at a time, with the 25 closest in size?',
   stress: 'What if things go wrong? Drag the severity slider to add losses and see whether capital stays above 7%.',
   method: 'Where every number comes from and how it is calculated.',
+}
+
+// The path through a credit union: each page hands off to the next question.
+function nextFor(section, cu) {
+  const steps = {
+    overview: [href(cu, 'trends'), 'How these measures have moved over time', 'Seven ratios since 2018, each against the peer band.'],
+    trends: [href(cu, 'forecast'), 'Where they are likely headed', 'Four-quarter projections, and how accurate the model has been.'],
+    forecast: [href(cu, 'peers'), 'How it compares with similar credit unions', 'The 25 closest in size, side by side.'],
+    peers: [href(cu, 'stress'), 'Test it under stress', 'Add losses and see whether capital holds above 7%.'],
+    stress: cu === 5536
+      ? ['#/case-study', 'Read the Navy Federal case study', 'The same numbers, written up as an analyst read-out.']
+      : [href(cu, 'report'), 'Print the one-page report', 'Everything above on a single page, ready to save as PDF.'],
+    method: [href(cu), 'Back to the overview', null],
+  }
+  return steps[section]
 }
 
 function sinceText(iso) {
@@ -240,13 +255,18 @@ export default function App() {
         <Masthead inst={inst.data} section={section} />
         {section === 'overview' && (
           <>
-            <Guide cu={cu} />
+            <Guide />
             {peers.data && <PlainSummary inst={inst.data} peers={peers.data} fc={fc.data} />}
             <Vitals inst={inst.data} peers={peers.data} meta={meta.data} />
           </>
         )}
         {SECTION_QUESTION[section] && <p className="tab-question">{SECTION_QUESTION[section]}</p>}
         <main>{view}</main>
+        {nextFor(section, cu) && (
+          <NextStep to={nextFor(section, cu)[0]} label={nextFor(section, cu)[1]}>
+            {nextFor(section, cu)[2]}
+          </NextStep>
+        )}
       </>
     )
   }

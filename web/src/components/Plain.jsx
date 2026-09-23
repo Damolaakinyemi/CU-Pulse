@@ -1,4 +1,4 @@
-import { X } from 'lucide-react'
+import { ArrowRight, X } from 'lucide-react'
 import { useState } from 'react'
 import { WELL_CAPITALIZED, latest, latestPeer, lowConfidence } from '../lib/analysis.js'
 import { isNum, pct, quarter } from '../lib/format.js'
@@ -74,6 +74,10 @@ export function PlainSummary({ inst, peers, fc }) {
           <li key={i}>{l}</li>
         ))}
       </ul>
+      <p className="plain-foot">
+        Capital is as reported to NCUA; other ratios are derived from the filings; projections are CU Pulse model output.{' '}
+        <a href={`${href(inst.cu_number, 'method')}?at=m-notes`}>Data notes</a>
+      </p>
     </section>
   )
 }
@@ -89,7 +93,7 @@ function readDismissed() {
 }
 
 /** A dismissible, first-visit strip explaining how to read the dashboard. Never a modal. */
-export function Guide({ cu }) {
+export function Guide() {
   const [hidden, setHidden] = useState(readDismissed)
   if (hidden) return null
   const dismiss = () => {
@@ -103,32 +107,30 @@ export function Guide({ cu }) {
   return (
     <aside className="guide-strip" aria-label="How to read this page">
       <div className="guide-strip-head">
-        <h2>New to credit union analysis? How to read this page in a minute</h2>
+        <h2>New to credit union analysis?</h2>
         <button type="button" className="guide-close" onClick={dismiss} aria-label="Hide this guide">
           <X size={16} strokeWidth={2} />
         </button>
       </div>
-      <ol>
-        <li>
-          <b>Start with “In plain terms”</b> below: the whole picture in four sentences.
-        </li>
-        <li>
-          <b>The five figures</b> are the credit union’s vital signs. The dot on each line shows where it ranks among{' '}
-          <Term id="peers">similar credit unions</Term>; the caption says whether higher or lower is stronger.
-        </li>
-        <li>
-          <b>The big chart</b> is capital over time. Solid ink is what was reported; the shaded{' '}
-          <Term id="forecast_fan">fan</Term> is the projection.
-        </li>
-        <li>
-          <b>Any dotted-underlined word</b> can be tapped for a definition. The tabs go deeper, and the{' '}
-          <a href="#/glossary">glossary</a> explains every term. The <a href={href(cu, 'stress')}>Stress test</a> is the most
-          hands-on place to start.
-        </li>
-      </ol>
-      <button type="button" className="button" onClick={dismiss}>
-        Got it, hide this
-      </button>
+      <p className="guide-text">
+        Read <b>In plain terms</b> first, then the five vital signs: the dot shows where each ranks among{' '}
+        <Term id="peers">similar credit unions</Term>. Tap any dotted word for a definition, or open the{' '}
+        <a href="#/glossary">glossary</a>. Each page ends with a link to the next step.
+      </p>
     </aside>
+  )
+}
+
+/** One clear way forward at the end of every page, so the app reads as a path, not a pile of tabs. */
+export function NextStep({ to, label, children }) {
+  return (
+    <nav className="next-step" aria-label="Next step">
+      <a href={to}>
+        <span className="next-step-kicker">Next</span>
+        <span className="next-step-label">{label}</span>
+        {children && <span className="next-step-text">{children}</span>}
+        <ArrowRight size={18} strokeWidth={2} aria-hidden="true" />
+      </a>
+    </nav>
   )
 }

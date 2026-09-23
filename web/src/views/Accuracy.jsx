@@ -1,3 +1,4 @@
+import { NextStep } from '../components/Plain.jsx'
 import { api, useResource } from '../api.js'
 import { ErrorNotice, Exhibit, Skeleton, Stamp } from '../components/Chrome.jsx'
 import { errFmt, finding } from '../lib/backtest.js'
@@ -100,7 +101,7 @@ export default function Accuracy() {
             narrow, usually because the history is short relative to the shocks it contains, and should be read as a floor
             on uncertainty rather than a promise.
           </p>
-        </article>
+    </article>
 
         <Exhibit
           className="span-5"
@@ -167,6 +168,9 @@ export default function Accuracy() {
           </div>
         </Exhibit>
       </div>
+      <NextStep to="#/" label="Look up any credit union">
+        Search all 4,299 and open its dashboard.
+      </NextStep>
     </div>
   )
 }

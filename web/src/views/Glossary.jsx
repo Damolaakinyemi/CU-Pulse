@@ -1,3 +1,4 @@
+import { NextStep } from '../components/Plain.jsx'
 import { GLOSSARY, GLOSSARY_ORDER } from '../lib/glossary.js'
 import { href } from '../lib/router.js'
 
@@ -38,6 +39,9 @@ export default function Glossary() {
           </p>
         </aside>
       </div>
+      <NextStep to="#/cu/5536" label="Put the terms to work on Navy Federal">
+        Its dashboard opens with a plain-language summary.
+      </NextStep>
     </article>
   )
 }

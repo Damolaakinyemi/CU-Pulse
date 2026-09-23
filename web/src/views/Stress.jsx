@@ -1,8 +1,10 @@
+import { Check, Link as LinkIcon } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Exhibit, Stamp } from '../components/Chrome.jsx'
 import { StressChart } from '../components/Charts.jsx'
 import { SEVERE, WELL_CAPITALIZED, breakevenNco, projectCapital, scenarioAt, stressBaseline } from '../lib/analysis.js'
 import { bp, isNum, pct, quarter, usd } from '../lib/format.js'
+import { useHashParam } from '../lib/router.js'
 
 function Lever({ id, label, value, min, max, step, onChange, format, note }) {
   const fill = `${((value - min) / (max - min)) * 100}%`
@@ -26,8 +28,16 @@ const PRESETS = [
 
 export default function Stress({ inst, fc }) {
   const base = useMemo(() => stressBaseline(inst, fc), [inst, fc])
-  const [severity, setSeverity] = useState(60)
-  const [override, setOverride] = useState(null)
+  // Scenario lives in the link (?severity=80 or ?levers=nco,roa,growth) so it can be shared.
+  const [sevParam, setSevParam] = useHashParam('severity', '60')
+  const [leverParam, setLeverParam] = useHashParam('levers', null)
+  const severity = Math.min(100, Math.max(0, Number(sevParam) || 0))
+  const setSeverity = (v) => setSevParam(String(v))
+  const parsed = leverParam?.split(',').map(Number)
+  const override = parsed?.length === 3 && parsed.every(Number.isFinite)
+    ? { nco: parsed[0], roaShift: parsed[1], growth: parsed[2] }
+    : null
+  const setOverride = (o) => setLeverParam(o ? [o.nco, o.roaShift, o.growth].map((x) => +x.toFixed(4)).join(',') : null)
 
   const levers = override ?? scenarioAt(base, severity)
   const path = projectCapital(base, levers)
@@ -54,6 +64,16 @@ export default function Stress({ inst, fc }) {
   })
 
   const setLever = (k) => (v) => setOverride({ ...levers, [k]: v })
+  const [copied, setCopied] = useState(false)
+  const copyLink = () => {
+    navigator.clipboard?.writeText(window.location.href).then(
+      () => {
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      },
+      () => {},
+    )
+  }
 
   return (
     <div className="grid">
@@ -67,6 +87,12 @@ export default function Stress({ inst, fc }) {
         id="stress-controls"
         title="Scenario"
         sub={`from ${quarter(base.quarter)}`}
+        tools={
+          <button type="button" className="button" onClick={copyLink} aria-live="polite">
+            {copied ? <Check size={14} strokeWidth={2} /> : <LinkIcon size={14} strokeWidth={2} />}
+            {copied ? 'Link copied' : 'Copy link to this scenario'}
+          </button>
+        }
         source={`Severity scales three levers together, linearly, up to: net charge-offs +${(SEVERE.nco * 100).toFixed(1)} pts, pre-loss ROA ${(SEVERE.roa * 100).toFixed(2)} pts, asset growth +${(SEVERE.growth * 100).toFixed(0)} pts (a deposit inflow that dilutes capital). Fine-tune any lever to break the link. At severity 0 (earnings retention) all of today's ROA is kept as net worth, while the dashed model baseline extrapolates the ratio's own history, so the two can differ. Illustrative capital arithmetic, not NCUA stress-testing methodology.`}
       >
         <div className="severity">

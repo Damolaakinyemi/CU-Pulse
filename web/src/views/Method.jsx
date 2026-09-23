@@ -1,18 +1,33 @@
+import { useEffect } from 'react'
 import { pct, quarter, usd } from '../lib/format.js'
+import { scrollToId, useHashParam } from '../lib/router.js'
+
+const TOC = [
+  ['m-data', 'Data'], ['m-notes', 'Data notes'], ['m-updates', 'Updates'], ['m-defs', 'Definitions'],
+  ['m-peers', 'Peers'], ['m-forecast', 'Forecast'], ['m-stress', 'Stress test'], ['m-limits', 'Limitations'],
+]
 
 export default function Method({ meta, peers, fc }) {
   const models = meta.forecast.models
+  const [at] = useHashParam('at', null)
+  useEffect(() => {
+    if (at) setTimeout(() => scrollToId(at), 50)
+  }, [at])
   return (
     <div className="grid">
       <nav className="span-3 toc" aria-label="On this page">
-        <a href="#m-data">Data</a>
-        <a href="#m-notes">Data notes</a>
-        <a href="#m-updates">Updates</a>
-        <a href="#m-defs">Definitions</a>
-        <a href="#m-peers">Peers</a>
-        <a href="#m-forecast">Forecast</a>
-        <a href="#m-stress">Stress test</a>
-        <a href="#m-limits">Limitations</a>
+        {TOC.map(([id, label]) => (
+          <a
+            key={id}
+            href={`#${id}`}
+            onClick={(e) => {
+              e.preventDefault()
+              scrollToId(id)
+            }}
+          >
+            {label}
+          </a>
+        ))}
       </nav>
       <article className="span-8 prose">
         <h2 id="m-data">Data</h2>
