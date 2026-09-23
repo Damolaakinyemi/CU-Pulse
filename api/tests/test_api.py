@@ -42,3 +42,8 @@ def test_peers_and_forecast_shapes(client):
     f = client.get("/api/credit-unions/5536/forecast").json()
     nwr = f["series"]["net_worth_ratio"]
     assert len(nwr["path"]) == 4 and nwr["model"] in nwr["backtest"]
+
+
+def test_health_answers_get_and_head(client):
+    assert client.get("/api/health").status_code == 200
+    assert client.head("/api/health").status_code == 200

@@ -104,7 +104,8 @@ def warm() -> None:
         threading.Thread(target=update_loop, daemon=True).start()
 
 
-@app.get("/api/health")
+# HEAD too: uptime monitors check with HEAD requests.
+@app.api_route("/api/health", methods=["GET", "HEAD"])
 def health():
     return {"ok": True, "loaded_at": UPDATES["loaded_at"]}
 
