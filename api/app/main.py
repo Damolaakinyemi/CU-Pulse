@@ -81,8 +81,10 @@ def check_ncua() -> None:
             UPDATES["last_change"] = {"at": result["checked_at"], "cycles": result["changed"]}
             dataset.cache_clear()
             cached_forecast.cache_clear()
+            cached_peers.cache_clear()
             dataset()
             cached_forecast(DEFAULT_CU)
+            cached_peers(DEFAULT_CU)
     except Exception as e:  # network trouble must never take the API down
         UPDATES.update(checked_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
                        error=f"{type(e).__name__}: {e}")
@@ -99,7 +101,7 @@ def update_loop() -> None:
 @app.on_event("startup")
 def warm() -> None:
     # Load the panel and pre-compute the default institution off the request path.
-    threading.Thread(target=lambda: cached_forecast(DEFAULT_CU), daemon=True).start()
+    threading.Thread(target=lambda: (cached_forecast(DEFAULT_CU), cached_peers(DEFAULT_CU)), daemon=True).start()
     if UPDATES["enabled"]:
         threading.Thread(target=update_loop, daemon=True).start()
 
@@ -195,10 +197,15 @@ def institution(cu_number: int):
     }
 
 
+@lru_cache(maxsize=512)
+def cached_peers(cu_number: int) -> dict:
+    return peer_stats(dataset(), cu_number)
+
+
 @app.get("/api/credit-unions/{cu_number}/peers")
 def peers(cu_number: int):
     require_cu(cu_number)
-    return peer_stats(dataset(), cu_number)
+    return cached_peers(cu_number)
 
 
 @app.get("/api/credit-unions/{cu_number}/forecast")
