@@ -60,6 +60,10 @@ def test_display_name():
     assert display_name("NAVY FEDERAL CREDIT UNION") == "Navy Federal Credit Union"
     assert display_name("CREDIT UNION OF TEXAS") == "Credit Union of Texas"
     assert display_name("IBM SOUTHEAST EMPLOYEES") == "IBM Southeast Employees"
+    assert display_name("URW COMMUNITY") == "URW Community"
+    assert display_name("O.A.S. STAFF") == "O.A.S. Staff"
+    assert display_name("ESSEX COUNTY (N.J.) TEACHERS") == "Essex County (N.J.) Teachers"
+    assert display_name("ST. LOUIS COMMUNITY") == "St. Louis Community"
 
 
 # ── Against the real panel ───────────────────────────────────────────────────

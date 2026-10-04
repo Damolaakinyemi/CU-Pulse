@@ -71,8 +71,20 @@ PCA_TIERS = [
 ]
 
 _UPPER = {"FCU", "CU", "USA", "US", "IBM", "USAA", "NASA", "TVA", "SECU", "PSECU", "GTE", "DC", "NY", "NJ", "PA", "VA",
-          "MD", "TX", "CA", "FL", "GA", "NC", "SC", "IBEW", "UAW", "AFL", "CIO", "TCU", "ECU", "FAA", "HP", "II", "III", "IV"}
+          "MD", "TX", "CA", "FL", "GA", "NC", "SC", "IBEW", "UAW", "AFL", "CIO", "TCU", "ECU", "FAA", "HP", "II", "III", "IV",
+          # Acronyms in NCUA names that contain a vowel, so the no-vowel rule misses them.
+          "AAA", "AAC", "AAP", "ABNB", "ACBA", "ACFCU", "ACU", "ADM", "AFGM", "AFLAC", "AMNH", "AOD", "APC", "APCI",
+          "APL", "APS", "ARH", "AVH", "BASF", "BHCU", "BMI", "BSE", "BVA", "CBI", "CCAC", "CCE", "CEMC", "CHHE", "CME",
+          "CNIC", "COGIC", "CSE", "CTA", "CTECU", "CUCC", "CUSA", "DATCU", "DBA", "DFCU", "DOTD", "ECM", "EECU", "EFCU",
+          "EPB", "EQT", "ESL", "ETS", "EWEB", "FASNY", "FCI", "FME", "GAF", "GECU", "GEICO", "GEMC", "GESB", "GFA",
+          "GHA", "GPCE", "GSA", "IAA", "IDB", "ILGWU", "ILWU", "IQ", "IRS", "IUPAT", "JACL", "JPFCE", "KUE", "KY",
+          "LAFCU", "LCRA", "LGE", "MAWC", "MCU", "MEA", "MSBA", "MTCU", "MUW", "NALC", "NAPFE", "NCE", "NESC", "NMA",
+          "NYM", "ODJFS", "OFS", "OPC", "ORNL", "OTS", "OUCU", "PBA", "PECU", "PFCU", "PMI", "PSE", "SDNY", "SECNY",
+          "SEI", "SIU", "SIUE", "SRU", "SUNY", "TBA", "TLCU", "TSU", "TTCU", "TXDOT", "UARK", "UBC", "UFCW", "UPS",
+          "URW", "USC", "USDA", "USEM", "USF", "USNE", "USX", "VAH", "WCLA", "WCU", "WIC", "WMCU", "WVU", "YTR"}
 _LOWER = {"of", "and", "the", "for", "at", "in", "on", "de"}
+_TITLE = {"ST", "ST.", "STS", "STS.", "MT.", "FT", "FT."}  # Saint, Mount, Fort: vowelless but not acronyms
+_INITIALS = re.compile(r"^\(?(?:[A-Za-z]\.){2,}[A-Za-z]?\.?\)?,?$")  # O.A.S., (N.J.), I.B.E.W.
 
 
 def display_name(raw: str) -> str:
@@ -80,7 +92,9 @@ def display_name(raw: str) -> str:
     words = []
     for i, token in enumerate(str(raw).split()):
         bare = re.sub(r"[^A-Za-z]", "", token)
-        if bare.upper() in _UPPER or (bare and not re.search(r"[AEIOUY]", bare.upper())):
+        if token.upper() in _TITLE:
+            words.append(token.capitalize())
+        elif bare.upper() in _UPPER or _INITIALS.match(token) or (bare and not re.search(r"[AEIOUY]", bare.upper())):
             words.append(token.upper())
         elif i > 0 and token.lower() in _LOWER:
             words.append(token.lower())

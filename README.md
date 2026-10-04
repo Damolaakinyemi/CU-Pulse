@@ -1,6 +1,6 @@
 # CU Pulse
 
-**Live app: [cu-pulse.onrender.com](https://cu-pulse.onrender.com)** (free hosting; the first visit after a quiet spell takes about 30 seconds to wake)
+**Live app: [cu-pulse.onrender.com](https://cu-pulse.onrender.com)**
 
 Financial health, four-quarter forecasts, and size-matched peer benchmarks for every U.S. federally insured credit union, built on NCUA's public 5300 Call Report data, with Navy Federal Credit Union (charter 5536) featured throughout.
 
