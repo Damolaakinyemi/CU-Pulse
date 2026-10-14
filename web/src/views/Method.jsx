@@ -149,14 +149,16 @@ export default function Method({ meta, peers, fc }) {
         <p>
           Each candidate is re-fit at eight historical origins using only the data available at the time and forecasts the next
           four quarters. The model with the lowest average error across those 32 out-of-sample forecasts is selected and re-fit
-          on the full history. Intervals widen with the square root of the horizon from the model’s one-step residual spread;
-          the backtest reports how often the realized values actually landed inside them, so a too-narrow interval shows up as
-          low coverage rather than hiding.
+          on the full history. Ranges widen with the square root of the horizon from the model’s one-step residual spread,
+          then are recalibrated: errors across all credit unions over the six most recent quarters with known outcomes set
+          how much wider each range must be, because the raw ranges held too few outcomes. The backtest below still uses the
+          model’s own raw ranges and reports how often realized values landed inside them, so a too-narrow range shows up
+          as low coverage rather than hiding; the Forecast accuracy page scores the recalibrated ranges. The recalibration lags, because it can only use outcomes already known, so when errors are rising the ranges can still fall short.
         </p>
         {fc?.series?.total_loans && (
           <p>
             For this credit union’s loans, the selected model’s 80% ranges held{' '}
-            {pct(fc.series.total_loans.backtest[fc.series.total_loans.model].coverage80, 0)} of outcomes in the backtest.
+            {pct(fc.series.total_loans.backtest[fc.series.total_loans.model].coverage80, 0)} of outcomes in the backtest (the model’s own range, before recalibration).
           </p>
         )}
 

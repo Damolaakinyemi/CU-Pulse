@@ -57,3 +57,53 @@ def test_honest_eval_scores_on_origins_the_choice_never_saw():
     assert out["chosen"] in {"drift", "ets", "arima"}
     assert out["error"] > 0 and out["drift_error"] > 0
     assert 0 <= out["coverage80"] <= 1
+
+
+def test_calibrated_multipliers_widen_forward_ranges_only():
+    rng = np.random.default_rng(5)
+    s = series(1e9 * np.exp(np.cumsum(0.01 + rng.normal(0, 0.01, 34))))
+    wide = {str(h): {"50": 2.0, "80": 4.0, "95": 6.0} for h in range(1, HORIZON + 1)}
+    plain, calibrated = forecast_series(s, log=True), forecast_series(s, log=True, calib=wide)
+    assert calibrated["path"][0]["hi80"] > plain["path"][0]["hi80"]
+    assert calibrated["path"][0]["lo95"] < plain["path"][0]["lo95"]
+    # the backtest is never graded with fitted multipliers
+    assert calibrated["backtest"] == plain["backtest"]
+    assert calibrated["trail"] == plain["trail"]
+
+
+def test_missing_calibration_falls_back_to_gaussian(tmp_path):
+    from pipeline.forecast import Z, _mult, load_calibration
+    assert load_calibration(tmp_path / "absent.json") is None
+    assert _mult(None, 2, "80") == Z["80"]
+    assert _mult({"3": {"80": 1.5}}, 2, "80") == Z["80"]
+    assert _mult({"2": {"80": 1.5}}, 2, "80") == 1.5
+
+
+def _fake_results(labels, z_for):
+    """300 credit unions, one series, with standardized errors z_for(label) at every horizon."""
+    return [{"x": {"error": 0.1, "chosen": "ets", "late_origins": [], "z": {lab: [z_for(lab)] * HORIZON for lab in labels}}}
+            for _ in range(300)]
+
+
+def test_calibration_table_pools_the_recent_window_only():
+    from pipeline.backtest_all import calibration_table
+    from pipeline.forecast import CAL_WINDOW
+    labels = [str(p) for p in pd.period_range("2023Q1", periods=12, freq="Q")]
+    newest = labels[-4]  # 2025Q1
+    # errors of 3.0 inside the window, 0.1 before it, and 99 after it (not yet known, so never used)
+    recent = set(labels[-4 - CAL_WINDOW + 1:-3])
+    res = _fake_results(labels, lambda lab: 3.0 if lab in recent else (99.0 if lab > newest else 0.1))
+    table = calibration_table(res, "x", newest)
+    assert set(table) == {"1", "2", "3", "4"}
+    assert table["1"]["80"] == pytest.approx(3.0)
+
+
+def test_causal_tables_use_only_origins_four_quarters_back():
+    from pipeline.backtest_all import causal_tables
+    labels = [str(p) for p in pd.period_range("2023Q1", periods=12, freq="Q")]
+    late = labels[-2:]
+    # every error is 1.0 up to four quarters before each scored origin, 50 afterwards
+    res = _fake_results(labels, lambda lab: 1.0 if lab <= str(pd.Period(late[0], freq="Q") - 4) else 50.0)
+    tables = causal_tables(res, "x", late)
+    assert tables[late[0]]["1"]["95"] == pytest.approx(1.0)
+    assert tables[late[1]]["1"]["95"] > 1.0  # its window reaches one origin later, which has the large errors

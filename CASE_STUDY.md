@@ -37,11 +37,11 @@ Capital rolled forward four quarters: pre-loss earnings less any charge-offs abo
 
 ## What the forecast says, and how far to trust it
 
-Loans are projected at $158.5B by Q2 2027 (80% range $154.8B–$162.4B); the net worth ratio at 11.58%. In Navy Federal's own backtest the selected loans model (Exponential smoothing (damped trend, quarterly seasonal)) had 1.7% mean absolute percentage error, and its 80% ranges held 75% of outcomes: useful for direction, too confident on range.
+Loans are projected at $158.5B by Q2 2027 (80% range $153.4B–$163.8B); the net worth ratio at 11.58%. In Navy Federal's own backtest the selected loans model (Exponential smoothing (damped trend, quarterly seasonal)) had 1.7% mean absolute percentage error, and its own 80% ranges held 75% of outcomes before recalibration, so the ranges shown here are adjusted using the industry's recent misses: useful for direction, with a range that is a floor on uncertainty.
 
 **Why the forecast (11.58%) sits below the earnings-retention case (12.51%).** They answer different questions. The retention case applies today's 1.41% ROA to assets growing 4.5% a year. The forecast extrapolates the ratio's own history, in which assets grew about 10.5% a year against an average year-end ROA of 1.22%; earnings roughly kept pace with growth, and the ratio stayed between 10.55% and 12.53%. Dividends on shares are already an expense before net income, so they are not the gap.
 
-Across all 4,299 active credit unions, choosing the model on early quarters and scoring it on later ones it never saw, the loans forecast cut median error by 21% against a random walk with drift (4.09% vs 5.17%), beating it for 57% of credit unions, and its 80% ranges held 72% of outcomes.
+Across all 4,299 active credit unions, choosing the model on early quarters and scoring it on later ones it never saw, the loans forecast cut median error by 21% against a random walk with drift (4.09% vs 5.17%), beating it for 57% of credit unions, and its recalibrated 80% ranges held 84% of outcomes averaged over the last four test points (the model's own ranges: 72%); that score flatters today's ranges, which are only modestly wider.
 
 ## What I would look at next
 

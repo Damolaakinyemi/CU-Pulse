@@ -16,7 +16,7 @@ Product context lives in [PRODUCT.md](PRODUCT.md); the Navy Federal write-up is 
 | **Forecast accuracy, every credit union** | **Peers** |
 | ![Industry-wide out-of-sample backtest](docs/screenshots/accuracy.png) | ![Peer board](docs/screenshots/peers.png) |
 
-**Headline result:** across all 4,299 active credit unions, scored on quarters the model choice never saw, the loans forecast cuts median error by 21% against a random walk with drift and beats it for 57% of credit unions. Its 80% ranges hold 72% of outcomes, so they are somewhat too narrow, and the app says so.
+**Headline result:** across all 4,299 active credit unions, scored on quarters the model choice never saw, the loans forecast cuts median error by 21% against a random walk with drift and beats it for 57% of credit unions. The model's own 80% ranges held only 72–77% of outcomes, because recent errors have run larger than the in-sample spread implies; the ranges shown in the app are recalibrated from the industry's most recent errors. Scored causally on the last four backtest origins (each judged with multipliers built only from outcomes known at the time) they held 84% of outcomes, but that flatters today's ranges: the scoring windows reached back to older, noisier quarters, and a 600-credit-union check put the most recent test point at 76–79%. Today's 80% ranges are 6% narrower to 37% wider than the model's own, depending on series and horizon (loans at four quarters ahead is the widest), so the app still calls them a floor on uncertainty.
 
 ## What it does
 
@@ -60,10 +60,12 @@ The Python suite covers the ratio definitions on hand-built filings, Navy Federa
 ## Industry backtest
 
 ```bash
-cd api && .venv/bin/python -m pipeline.backtest_all   # about 20 minutes on 8 cores
+cd api && .venv/bin/python -m pipeline.backtest_all   # about 1 hour on 8 cores
 ```
 
 For every active credit union, the model is chosen on the earliest four of eight rolling origins and scored on the last four, so the reported accuracy is not flattered by the selection. Output: `api/data/processed/backtest_summary.json`, shown on the Forecast accuracy page.
+
+The same run recalibrates the forecast ranges. Standardized errors (|error| / spread) over the six most recent origins whose outcomes are known, pooled across credit unions, set the 50/80/95% multipliers per series and horizon (`api/data/processed/interval_calibration.json`, read by the live forecasts; without it the ranges fall back to Gaussian). Coverage is scored causally: each of the last four origins is judged with multipliers built only from outcomes known when it was made. Re-run after each new quarter so the multipliers track recent errors; a fixed correction does not hold, because errors drift over time (a calibration fitted once, on early origins, made coverage worse on later ones). Even the rolling version lags when errors are rising, since it can only use outcomes already known.
 
 ## Deploy
 
@@ -94,7 +96,7 @@ The Method page's Data notes cover names, extreme values and mergers.
 - `api/pipeline/ncua.py`: downloads and parses the Call Report zips (`FOICU`, `FS220`, `FS220A`) into `data/processed/call_reports.csv.gz`
 - `api/pipeline/metrics.py`: ratio definitions (FPR conventions), capital (PCA) tiers, peer selection and statistics
 - `api/pipeline/forecast.py`: candidate models, rolling-origin backtest, interval coverage, honest out-of-sample evaluation
-- `api/pipeline/backtest_all.py`: the industry-wide backtest
+- `api/pipeline/backtest_all.py`: the industry-wide backtest and interval recalibration
 - `api/pipeline/case_study.py`: regenerates CASE_STUDY.md from the data
 - `api/tests/`, `web/src/lib/__tests__/`: test suites
 - `api/app/main.py`: FastAPI routes `/api/meta`, `/api/credit-unions?q=`, `/api/credit-unions/{charter}`, `/peers`, `/forecast`

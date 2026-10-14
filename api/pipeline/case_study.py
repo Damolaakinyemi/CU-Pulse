@@ -170,8 +170,9 @@ def main():
         f"Loans are projected at {usd(loans_end['point'])} by {quarter(loans_end['quarter'])} (80% range "
         f"{usd(loans_end['lo80'])}–{usd(loans_end['hi80'])}); the net worth ratio at {pct(nw_end['point'])}. In Navy "
         f"Federal's own backtest the selected loans model ({loans['model_label']}) had {pct(chosen['error'], 1)} mean "
-        f"absolute percentage error, and its 80% ranges held {pct(chosen['coverage80'], 0)} of outcomes: useful for "
-        f"direction, too confident on range.",
+        f"absolute percentage error, and its own 80% ranges held {pct(chosen['coverage80'], 0)} of outcomes before "
+        f"recalibration, so the ranges shown here are adjusted using the industry's recent misses: useful for "
+        f"direction, with a range that is a floor on uncertainty.",
         "",
         f"**Why the forecast ({pct(nw_end['point'])}) sits below the earnings-retention case ({pct(calm)}).** They answer "
         f"different questions. The retention case applies today's {pct(now.roa)} ROA to assets growing {pct(growth, 1)} a "
@@ -187,8 +188,9 @@ def main():
             f"Across all {bt['credit_unions']:,} active credit unions, choosing the model on early quarters and scoring it "
             f"on later ones it never saw, the loans forecast cut median error by {pct(b['skill_vs_drift'], 0)} against a "
             f"random walk with drift ({pct(b['median_error'])} vs {pct(b['median_drift_error'])}), beating it for "
-            f"{pct(b['beats_drift_share'], 0)} of credit unions, and its 80% ranges held {pct(b['coverage80_mean'], 0)} "
-            f"of outcomes.",
+            f"{pct(b['beats_drift_share'], 0)} of credit unions, and its recalibrated 80% ranges held "
+            f"{pct(b['coverage80_mean'], 0)} of outcomes averaged over the last four test points (the model's own ranges: "
+            f"{pct(b['coverage80_uncalibrated_mean'], 0)}); that score flatters today's ranges, which are only modestly wider.",
         ]
     lines += [
         "",

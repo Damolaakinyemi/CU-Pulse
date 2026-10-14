@@ -42,7 +42,10 @@ export function SummaryTable({ data, rows = ORDER, compact = false }) {
                 <td>{e(s.median_drift_error)}</td>
                 <td><b>{pct(s.skill_vs_drift, 0)}</b></td>
                 {!compact && <td>{pct(s.beats_drift_share, 0)}</td>}
-                <td>{pct(s.coverage80_mean, 0)}</td>
+                <td>
+                  {pct(s.coverage80_mean, 0)}
+                  {s.coverage80_uncalibrated_mean != null && <span className="muted"> · was {pct(s.coverage80_uncalibrated_mean, 0)}</span>}
+                </td>
                 {!compact && <td className="acct"><Stamp kind="reported">{calibration(s.coverage80_mean)}</Stamp></td>}
               </tr>
             )
@@ -59,6 +62,10 @@ export default function Accuracy() {
   if (!bt.data) return <div className="grid"><div className="span-12"><Skeleton height={500} /></div></div>
   const d = bt.data
   const bands = Object.keys(d.by_band)
+  const was = ORDER.map((k) => d.overall[k]?.coverage80_uncalibrated_mean).filter((v) => v != null)
+  const live = d.live_widen80
+  const recalibrated = was.length > 0 && live != null
+  const times = (v) => `×${v.toFixed(2)}`
 
   return (
     <div className="page-read">
@@ -76,7 +83,7 @@ export default function Accuracy() {
           id="acc-overall"
           title="Out-of-sample accuracy"
           sub="all credit unions"
-          source={`${d.method} Error is MAPE for balances and mean absolute error in ratio points for the net worth ratio. Error reduction compares medians across credit unions. Calibration: within ±5 points of the nominal 80% counts as calibrated.`}
+          source={`${d.method} Error is MAPE for balances and mean absolute error in ratio points for the net worth ratio. Error reduction compares medians across credit unions. Range held is the average over the last four test points after recalibration (see below), which flatters today’s ranges; “was” is the model’s own range before it. Calibration: within ±5 points of the nominal 80% counts as calibrated.`}
         >
           <SummaryTable data={d} />
         </Exhibit>
@@ -96,11 +103,41 @@ export default function Accuracy() {
             graded on the last four, which played no part in the choice. The benchmark is a random walk with drift, the
             forecast any analyst could make in a spreadsheet; a model that cannot beat it has not earned its complexity.
           </p>
-          <p>
-            Coverage is reported rather than assumed. Where 80% ranges hold fewer than 80% of outcomes, the ranges are too
-            narrow, usually because the history is short relative to the shocks it contains, and should be read as a floor
-            on uncertainty rather than a promise.
-          </p>
+          {recalibrated ? (
+            <>
+              <p>
+                Coverage is reported rather than assumed, and it caught a flaw. A model’s own range is built from how
+                closely it fit the past, and forecast errors have recently run larger than that implies: the raw 80% ranges
+                held only {pct(Math.min(...was), 0)}–{pct(Math.max(...was), 0)} of outcomes.
+              </p>
+              <p>
+                So the ranges on each forecast are recalibrated from the industry’s own recent misses: for every horizon,
+                the size of the errors across all credit unions over the six most recent quarters whose outcomes are
+                already known sets how wide the range must be. To score that fairly, each of the last four test points is
+                judged with a range built only from outcomes known at that moment. The table above shows that score, and it
+                flatters today’s ranges: those scoring windows reached back to older, noisier quarters. Errors have kept
+                growing faster than a trailing window can follow, so the ranges at the most recent test point still fell a
+                little short of 80%.
+              </p>
+              <p>
+                Today’s widening of the 80% range against the model’s own, from one to four quarters ahead:{' '}
+                {ORDER.filter((k) => live[k]).map((k, i) => (
+                  <span key={k}>
+                    {i > 0 && '; '}
+                    {d.labels[k].toLowerCase()} {times(live[k][0])} to {times(live[k][live[k].length - 1])}
+                  </span>
+                ))}
+                . It is modest where recent errors stayed close to the model’s own spread and large for loans at long
+                horizons. Read the ranges as a floor on uncertainty rather than a promise.
+              </p>
+            </>
+          ) : (
+            <p>
+              Coverage is reported rather than assumed. Where 80% ranges hold fewer than 80% of outcomes, the ranges are
+              too narrow, usually because the history is short relative to the shocks it contains, and should be read as a
+              floor on uncertainty rather than a promise.
+            </p>
+          )}
     </article>
 
         <Exhibit

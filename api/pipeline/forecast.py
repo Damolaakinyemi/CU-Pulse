@@ -11,23 +11,43 @@ Each candidate is scored on a rolling-origin backtest: from each of the last
 eight origins it forecasts four quarters it has not seen, and the errors are
 compared with what was actually reported. The model with the lowest mean
 absolute percentage error across all origins and horizons is selected and
-refit on the full history. Intervals are Gaussian in log space, widening
-with the square root of the horizon from the model's one-step residual
-spread; the backtest reports how often the realized values actually fell
-inside them, so the intervals are checked rather than assumed.
+refit on the full history. Intervals are centred on the point forecast and
+widen with the square root of the horizon from the model's one-step residual
+spread. That spread is measured in-sample, and forecast errors drift over time
+(recently they have run larger than the spread implies), so Gaussian
+multipliers leave the ranges too narrow and no fixed correction holds.
+
+The forward ranges are therefore recalibrated from recent errors. For each
+series and horizon, `pipeline.backtest_all` pools the standardized out-of-sample
+errors (|error| / spread) of every credit union over the six most recent
+backtest origins whose outcome is already known, and stores the quantiles that
+contain 50/80/95% of them. Forward ranges use those multipliers; without a
+calibration file they fall back to Gaussian. The per-credit-union backtest
+tables stay on the plain Gaussian ranges, so they are never graded with
+multipliers fitted to the same errors. The industry-wide run scores the
+recalibration causally: each forecast is judged with multipliers built only
+from outcomes known when it was made.
 
 The net worth ratio is forecast in levels (percentage points), not logs.
 """
 
+from __future__ import annotations
+
+import json
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
+CALIBRATION_FILE = Path(__file__).resolve().parent.parent / "data" / "processed" / "interval_calibration.json"
+LEVELS = {"50": 0.5, "80": 0.8, "95": 0.95}
 HORIZON = 4
-ORIGINS = 8
+ORIGINS = 8          # scoring window: the model is chosen on the first 4 of these origins and scored on the last 4
+CAL_ORIGINS = 12     # backtest depth for calibration: the 8 above plus 4 earlier origins
+CAL_WINDOW = 6       # recent, fully known origins whose errors set the multipliers
 MIN_HISTORY = 16
 Z = {"50": 0.6745, "80": 1.2816, "95": 1.9600}
 
@@ -42,6 +62,22 @@ MODELS = {
     "ets": "Exponential smoothing (damped trend, quarterly seasonal)",
     "arima": "ARIMA(1,1,0) with drift",
 }
+
+
+def load_calibration(path: Path = CALIBRATION_FILE) -> dict | None:
+    """{series: {horizon: {level: multiplier}}}, or None when no calibration has been built."""
+    try:
+        return json.loads(Path(path).read_text())["calibration"]
+    except (OSError, ValueError, KeyError):
+        return None
+
+
+def _mult(calib: dict | None, h: int, level: str) -> float:
+    """Interval multiplier at horizon h (1-based): calibrated if available, else Gaussian."""
+    try:
+        return float(calib[str(h)][level])
+    except (TypeError, KeyError):
+        return Z[level]
 
 
 def _fit(model: str, y: np.ndarray):
@@ -62,12 +98,13 @@ def _fit(model: str, y: np.ndarray):
     return np.asarray(fit.forecast(HORIZON)), np.std(resid[-16:], ddof=1)
 
 
-def _backtest(model: str, y: np.ndarray, log: bool, quarters: list) -> dict:
+def _backtest(model: str, y: np.ndarray, log: bool, quarters: list, origins: int = ORIGINS) -> dict:
+    """Rolling-origin backtest on plain Gaussian ranges (never graded with fitted multipliers)."""
     back = lambda v: np.exp(v) if log else v
     errors, hits, trail = [], {k: [] for k in Z}, []
     by_h = {h: [] for h in range(1, HORIZON + 1)}
     n = len(y)
-    for origin in range(n - HORIZON - ORIGINS + 1, n - HORIZON + 1):
+    for origin in range(n - HORIZON - origins + 1, n - HORIZON + 1):
         point, sigma = _fit(model, y[:origin])
         actual = y[origin:origin + HORIZON]
         for h in range(HORIZON):
@@ -76,12 +113,14 @@ def _backtest(model: str, y: np.ndarray, log: bool, quarters: list) -> dict:
             err = abs(pred - real) / abs(real) if log else abs(pred - real)
             errors.append(err)
             by_h[h + 1].append(err)
+            miss = abs(actual[h] - point[h])
             for k, z in Z.items():
-                hits[k].append(abs(actual[h] - point[h]) <= z * spread)
+                hits[k].append(miss <= z * spread)
+            w80 = Z["80"] * spread
             trail.append({"origin": quarters[origin - 1], "quarter": quarters[origin + h], "h": h + 1,
                           "predicted": float(pred), "actual": float(real),
-                          "lo80": float(back(point[h] - Z["80"] * spread)),
-                          "hi80": float(back(point[h] + Z["80"] * spread))})
+                          "lo80": float(back(point[h] - w80)), "hi80": float(back(point[h] + w80)),
+                          "z": float(miss / spread) if spread > 0 else (0.0 if miss == 0 else float("inf"))})
     return {
         "trail": trail,
         "error": float(np.mean(errors)),
@@ -95,8 +134,12 @@ def _next_quarters(last: str) -> list:
     return [str(p + h) for h in range(1, HORIZON + 1)]
 
 
-def forecast_series(history: pd.Series, log: bool) -> dict:
-    """history: values indexed by quarter string, oldest first, no gaps."""
+def forecast_series(history: pd.Series, log: bool, calib: dict | None = None) -> dict:
+    """history: values indexed by quarter string, oldest first, no gaps.
+
+    calib: {horizon: {level: multiplier}} for this series, or None for Gaussian multipliers. It sets the
+    forward ranges only; the backtest stays on Gaussian ranges.
+    """
     y = np.log(history.values) if log else history.values.astype(float)
     candidates = ["drift", "ets", "arima"] if len(y) >= MIN_HISTORY + HORIZON else ["drift"]
     scores = {}
@@ -114,8 +157,8 @@ def forecast_series(history: pd.Series, log: bool) -> dict:
         path.append({
             "quarter": quarter,
             "point": float(back(point[h])),
-            **{f"lo{k}": float(back(point[h] - z * spread)) for k, z in Z.items()},
-            **{f"hi{k}": float(back(point[h] + z * spread)) for k, z in Z.items()},
+            **{f"lo{k}": float(back(point[h] - _mult(calib, h + 1, k) * spread)) for k in Z},
+            **{f"hi{k}": float(back(point[h] + _mult(calib, h + 1, k) * spread)) for k in Z},
         })
     benchmark = scores.get("drift", {}).get("error")
     return {
@@ -127,6 +170,8 @@ def forecast_series(history: pd.Series, log: bool) -> dict:
         "trail": scores[chosen]["trail"],
         "origin": history.index[-1],
         "path": path,
+        # how far the forward ranges were widened relative to the model's own Gaussian ranges (80% level)
+        "interval": {"calibrated": bool(calib), "widen80": [round(_mult(calib, h, "80") / Z["80"], 2) for h in range(1, HORIZON + 1)]},
     }
 
 
@@ -144,6 +189,11 @@ def honest_eval(history: pd.Series, log: bool, select_on: int = 4) -> dict:
     Every candidate is backtested from the usual eight origins. The model is
     chosen on the earliest `select_on` origins only, then it and the drift
     benchmark are scored on the later origins, which played no part in the choice.
+
+    The chosen model's standardized errors (|error| / spread, by origin and
+    horizon) are also returned, from up to `CAL_ORIGINS` origins, so the
+    industry-wide run can calibrate intervals from errors that were already
+    known at each point in time. The extra origins never affect the choice or the score.
     """
     y = np.log(history.values) if log else history.values.astype(float)
     quarters = list(history.index)
@@ -167,16 +217,28 @@ def honest_eval(history: pd.Series, log: bool, select_on: int = 4) -> dict:
         return float(np.mean(hits)) if hits else None
 
     chosen = min(trails, key=lambda m: err(trails[m], early))
+    deep = trails[chosen]
+    if len(y) >= CAL_ORIGINS + HORIZON + MIN_HISTORY - 1:
+        try:
+            deep = _backtest(chosen, y, log, quarters, origins=CAL_ORIGINS)["trail"]
+        except Exception:  # keep the eight origins already in hand
+            pass
+    z = {}
+    for t in deep:
+        z.setdefault(t["origin"], []).append(t["z"])
     return {
         "chosen": chosen,
         "error": err(trails[chosen], late),
         "drift_error": err(trails["drift"], late),
         "coverage80": cover(trails[chosen], late),
+        "z": z,
+        "late_origins": sorted(late),
     }
 
 
 def forecast_cu(rows: pd.DataFrame) -> dict:
     rows = _unbroken(rows)
+    calibration = load_calibration()
     out = {}
     for key, spec in SERIES.items():
         history = rows[key].dropna()
@@ -185,5 +247,6 @@ def forecast_cu(rows: pd.DataFrame) -> dict:
         if len(history) < HORIZON + ORIGINS + 2:
             out[key] = None
             continue
-        out[key] = {"label": spec["label"], "accounts": spec["accounts"], **forecast_series(history, spec["log"])}
+        out[key] = {"label": spec["label"], "accounts": spec["accounts"],
+                    **forecast_series(history, spec["log"], (calibration or {}).get(key))}
     return {"horizon": HORIZON, "origins": ORIGINS, "series": out}

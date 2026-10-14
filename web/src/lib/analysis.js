@@ -168,7 +168,7 @@ export function reading(inst, peers, fc) {
       parts: [
         l.skill_vs_drift != null ? `Loans forecast by ${l.model_label.toLowerCase()}, ` : 'Loans forecast by ',
         ...skill,
-        ` over ${fc.origins} out-of-sample origins (MAPE ${pct(chosen.error, 1)}); 80% intervals held ${pct(chosen.coverage80, 0)} of outcomes.`,
+        ` over ${fc.origins} out-of-sample origins (MAPE ${pct(chosen.error, 1)}); the model’s own 80% ranges held ${pct(chosen.coverage80, 0)} of outcomes before recalibration.`,
       ],
     })
   }

@@ -238,8 +238,9 @@ export default function CaseStudy({ meta }) {
           {loans && (
             <p>
               In Navy Federal’s own backtest the selected loans model’s error was {pct(loans.backtest[loans.model].error, 1)}, and
-              its 80% ranges held {pct(loans.backtest[loans.model].coverage80, 0)} of outcomes: useful for direction, too
-              confident on range.
+              its own 80% ranges held {pct(loans.backtest[loans.model].coverage80, 0)} of outcomes before recalibration,
+              so the ranges shown here are adjusted using the industry’s recent misses: useful for direction, with a range
+              that is a floor on uncertainty.
             </p>
           )}
           {ind?.total_loans && (

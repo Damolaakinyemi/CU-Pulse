@@ -12,5 +12,5 @@ export function finding(key, s, label) {
   const cov = Math.round(s.coverage80_mean * 100)
   const vs = skill > 0 ? `${skill}% lower median error than the drift benchmark` : skill < 0 ? `${-skill}% higher median error than the drift benchmark` : 'the same median error as the drift benchmark'
   const ties = tie ? ` and identical for ${tie}%, where drift itself was chosen` : ''
-  return `${label}: ${vs}, better for ${beat}% of credit unions${ties}; 80% ranges held ${cov}% of outcomes.`
+  return `${label}: ${vs}, better for ${beat}% of credit unions${ties}; 80% ranges held ${cov}% of outcomes${s.coverage80_uncalibrated_mean != null ? ` after recalibration (averaged over the last four test points), up from ${Math.round(s.coverage80_uncalibrated_mean * 100)}%` : ''}.`
 }

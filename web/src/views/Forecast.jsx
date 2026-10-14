@@ -93,7 +93,11 @@ export default function Forecast({ inst, fc, fcState }) {
         id="fc-table"
         title="Projection"
         sub="point and ranges by quarter"
-        source="Intervals are Gaussian in log space for balances (levels for the ratio), widening with the square root of the horizon from each model's one-step residual spread."
+        source={`Ranges are centred on the point forecast (log space for balances, levels for the ratio) and widen with the square root of the horizon from each model's one-step residual spread${
+          s.interval?.calibrated
+            ? `, then are rescaled ×${s.interval.widen80[0].toFixed(2)} at one quarter to ×${s.interval.widen80[3].toFixed(2)} at four (80% range) using the industry's recent forecast misses, because the model's own ranges held too few outcomes in testing. Recent errors have kept growing, so treat the ranges as a floor on uncertainty.`
+            : '.'
+        }`}
       >
         <div className="table-wrap">
           <table className="data">
@@ -146,7 +150,7 @@ export default function Forecast({ inst, fc, fcState }) {
             onChange={setFocus}
           />
         }
-        source={`Each model re-fit at every origin using only data available then, and scored on the ${fc.horizon} quarters that followed. Error is ${s.error_metric}. Coverage is the share of realized values that fell inside each nominal range; the lowest-error model is selected.`}
+        source={`Each model re-fit at every origin using only data available then, and scored on the ${fc.horizon} quarters that followed. Error is ${s.error_metric}. Coverage is the share of realized values that fell inside each nominal range, using the model’s own range before the industry recalibration applied to the forecast above (the Forecast accuracy page scores the recalibrated ranges); the lowest-error model is selected.`}
       >
         <div className="table-wrap">
           <table className="data">
